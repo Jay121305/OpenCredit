@@ -1,0 +1,85 @@
+# =============================================================================
+# Docker Ignore File for OpenCredit
+# =============================================================================
+# Excludes unnecessary files from Docker build context for faster builds
+# and smaller images.
+# =============================================================================
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+.eggs
+
+# Virtual environments
+.venv
+venv
+ENV
+env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.project
+.pydevproject
+.settings
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+coverage.xml
+*.cover
+.hypothesis
+.tox
+.nox
+
+# Documentation
+docs/_build
+*.md
+!README.md
+
+# Local databases
+*.db
+*.sqlite3
+
+# Environment files (secrets!)
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+*.log
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.docker
+
+# Misc
+*.bak
+*.tmp
+*.temp

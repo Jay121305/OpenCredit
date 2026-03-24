@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenCredit — Digital Credit Platform</title>
+<meta name="description" content="OpenCredit digital credit and payment infrastructure dashboard">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN SYSTEM — CSS Variables
+   ============================================================ */
+:root {
+  --bg-primary:    #060b1f;
+  --bg-secondary:  #0c1229;
+  --bg-card:       rgba(15, 22, 50, 0.72);
+  --bg-card-hover: rgba(20, 28, 60, 0.85);
+  --border-card:   rgba(79, 124, 255, 0.12);
+  --border-focus:  rgba(79, 124, 255, 0.55);
+  --accent-blue:   #4f7cff;
+  --accent-cyan:   #00d4ff;
+  --accent-purple: #7c5cff;
+  --accent-green:  #00e68a;
+  --accent-red:    #ff4d6a;
+  --accent-amber:  #ffb444;
+  --text-primary:  #e8ecf4;
+  --text-secondary:#8a94a6;
+  --text-muted:    #525c6e;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.35);
+  --transition: .25s cubic-bezier(.4,0,.2,1);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: var(--font);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(79,124,255,.2); border-radius:9px; }
+a { text-decoration:none; color:inherit; }
+button { cursor:pointer; font-family:var(--font); border:none; }
+input, select { font-family:var(--font); }
+
+/* ============================================================
+   ANIMATED BACKGROUND MESH
+   ============================================================ */
+body::before {
+  content:"";
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse 600px 600px at 15% 20%, rgba(79,124,255,.08), transparent),
+    radial-gradient(ellipse 500px 500px at 80% 70%, rgba(124,92,255,.06), transparent),
+    radial-gradient(ellipse 400px 400px at 50% 50%, rgba(0,212,255,.04), transparent);
+  pointer-events:none; z-index:0;
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+.sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+.grid-2 { display:grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap:24px; }
+
+/* ============================================================
+   GLASS CARD
+   ============================================================ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  padding: 28px;
+  transition: border var(--transition), transform var(--transition);
+  position:relative; overflow:hidden;
+}
+.card:hover { border-color: rgba(79,124,255,.25); }
+.card::before {
+  content:""; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, rgba(79,124,255,.25), transparent);
+}
+.card-title {
+  font-size: .82rem; font-weight:600; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--text-secondary); margin-bottom:18px;
+  display:flex; align-items:center; gap:8px;
+}
+.card-title .icon { font-size:1.1rem; }
+
+/* ============================================================
+   AUTH SCREEN
+   ============================================================ */
+#auth-screen {
+  display:flex; align-items:center; justify-content:center;
+  min-height:100vh; position:relative; z-index:1;
+}
+.auth-container {
+  width:100%; max-width:420px; padding:0 20px;
+  animation: fadeUp .6s ease both;
+}
+.auth-logo {
+  text-align:center; margin-bottom:40px;
+}
+.auth-logo h1 {
+  font-size:2rem; font-weight:800;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.auth-logo p { color:var(--text-secondary); font-size:.88rem; margin-top:6px; }
+.auth-card { padding:36px; }
+.auth-tabs {
+  display:flex; gap:0; margin-bottom:28px;
+  background: rgba(255,255,255,.04); border-radius:var(--radius-sm); overflow:hidden;
+}
+.auth-tab {
+  flex:1; padding:11px; text-align:center; font-size:.85rem; font-weight:600;
+  color:var(--text-secondary); background:transparent; border:none;
+  transition: var(--transition); cursor:pointer;
+}
+.auth-tab.active {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color:#fff; border-radius:var(--radius-sm);
+}
+.form-group { margin-bottom:18px; }
+.form-label {
+  display:block; font-size:.78rem; font-weight:600;
+  color:var(--text-secondary); margin-bottom:7px; letter-spacing:.04em;
+}
+.form-input {
+  width:100%; padding:12px 16px; border-radius:var(--radius-sm);
+  border:1px solid var(--border-card); background:rgba(255,255,255,.04);
+  color:var(--text-primary); font-size:.92rem; transition:var(--transition);
+  outline:none;
+}
+.form-input:focus { border-color:var(--border-focus); background:rgba(255,255,255,.06); }
+.form-input::placeholder { color:var(--text-muted); }
+.btn-primary {
+  width:100%; padding:14px; border-radius:var(--radius-sm); border:none;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  color:#fff; font-size:.92rem; font-weight:600; letter-spacing:.02em;
+  transition: var(--transition); position:relative; overflow:hidden;
+}
+.btn-primary:hover { transform:translateY(-1px); filter:brightness(1.12); }
+.btn-primary:active { transform:translateY(0); }
+.btn-primary:disabled { opacity:.55; cursor:not-allowed; transform:none; }
+.auth-error {
+  background:rgba(255,77,106,.1); border:1px solid rgba(255,77,106,.25);
+  color:var(--accent-red); border-radius:var(--radius-sm);
+  padding:10px 14px; font-size:.82rem; margin-bottom:16px;
+  display:none; animation:fadeUp .3s ease both;
+}
+.auth-error.visible { display:block; }
+
+/* ============================================================
+   DASHBOARD LAYOUT
+   ============================================================ */
+#dashboard-screen { display:none; position:relative; z-index:1; }
+.topbar {
+  position:sticky; top:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 32px;
+  background:rgba(6,11,31,.82); backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border-card);
+}
+.topbar-brand {
+  font-size:1.25rem; font-weight:800;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.topbar-right { display:flex; align-items:center; gap:18px; }
+.topbar-user {
+  display:flex; align-items:center; gap:10px;
+  font-size:.88rem; color:var(--text-secondary);
+}
+.topbar-avatar {
+  width:36px; height:36px; border-radius:50%;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:.82rem; color:#fff;
+}
+.btn-logout {
+  padding:8px 18px; border-radius:var(--radius-sm); font-size:.8rem; font-weight:600;
+  color:var(--text-secondary); background:rgba(255,255,255,.05);
+  border:1px solid var(--border-card); transition:var(--transition);
+}
+.btn-logout:hover { border-color:var(--accent-red); color:var(--accent-red); }
+
+/* Nav Tabs */
+.nav-tabs {
+  display:flex; gap:2px; padding:0 32px; margin-top:0;
+  background:rgba(6,11,31,.5); border-bottom:1px solid var(--border-card);
+  overflow-x:auto;
+}
+.nav-tab {
+  padding:14px 22px; font-size:.84rem; font-weight:600;
+  color:var(--text-secondary); background:transparent; border:none;
+  border-bottom:2px solid transparent; transition:var(--transition);
+  white-space:nowrap; cursor:pointer;
+}
+.nav-tab:hover { color:var(--text-primary); }
+.nav-tab.active {
+  color:var(--accent-blue);
+  border-bottom-color:var(--accent-blue);
+}
+
+/* Main Content */
+.main-content { padding:28px 32px; max-width:1280px; margin:0 auto; }
+.tab-panel { display:none; animation: fadeUp .4s ease both; }
+.tab-panel.active { display:block; }
+
+/* ============================================================
+   OVERVIEW TAB — STAT CARDS
+   ============================================================ */
+.stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin-bottom:28px; }
+.stat-card {
+  padding:24px; position:relative;
+}
+.stat-card .stat-label {
+  font-size:.76rem; font-weight:600; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--text-secondary); margin-bottom:10px;
+}
+.stat-card .stat-value { font-size:1.8rem; font-weight:800; }
+.stat-card .stat-sub { font-size:.78rem; color:var(--text-secondary); margin-top:4px; }
+.stat-accent-blue .stat-value  { color:var(--accent-blue); }
+.stat-accent-green .stat-value { color:var(--accent-green); }
+.stat-accent-purple .stat-value{ color:var(--accent-purple); }
+.stat-accent-amber .stat-value { color:var(--accent-amber); }
+
+/* Credit Ring */
+.credit-ring-wrap { display:flex; align-items:center; gap:22px; }
+.credit-ring {
+  width:68px; height:68px; position:relative;
+}
+.credit-ring svg { transform:rotate(-90deg); }
+.credit-ring-bg { fill:none; stroke:rgba(255,255,255,.06); stroke-width:5; }
+.credit-ring-fg { fill:none; stroke-width:5; stroke-linecap:round; transition:.8s ease; }
+.credit-ring-text {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-size:.72rem; font-weight:700; color:var(--text-primary);
+}
+
+/* ============================================================
+   TRANSACTIONS TABLE
+   ============================================================ */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+thead th {
+  font-size:.72rem; font-weight:600; text-transform:uppercase;
+  letter-spacing:.06em; color:var(--text-muted); text-align:left;
+  padding:12px 14px; border-bottom:1px solid var(--border-card);
+}
+tbody td {
+  padding:14px; font-size:.88rem; border-bottom:1px solid rgba(255,255,255,.03);
+  vertical-align:middle;
+}
+tbody tr { transition:background var(--transition); }
+tbody tr:hover { background:rgba(79,124,255,.04); }
+.badge {
+  display:inline-block; padding:4px 12px; border-radius:100px;
+  font-size:.72rem; font-weight:600; letter-spacing:.02em;
+}
+.badge-approved { background:rgba(0,230,138,.12); color:var(--accent-green); }
+.badge-flagged  { background:rgba(255,180,68,.12); color:var(--accent-amber); }
+.badge-rejected { background:rgba(255,77,106,.12); color:var(--accent-red); }
+.empty-state {
+  text-align:center; padding:48px 20px; color:var(--text-muted);
+}
+.empty-state .empty-icon { font-size:2.5rem; margin-bottom:12px; opacity:.4; }
+.empty-state p { font-size:.92rem; }
+
+/* ============================================================
+   PAYMENT FORM
+   ============================================================ */
+.pay-form { max-width:520px; }
+.pay-form .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.pay-result {
+  margin-top:20px; padding:18px; border-radius:var(--radius-md);
+  font-size:.88rem; display:none; animation:fadeUp .3s ease both;
+}
+.pay-result.success { background:rgba(0,230,138,.08); border:1px solid rgba(0,230,138,.2); color:var(--accent-green); }
+.pay-result.error   { background:rgba(255,77,106,.08); border:1px solid rgba(255,77,106,.2); color:var(--accent-red); }
+.pay-result.visible { display:block; }
+
+/* ============================================================
+   MERCHANT SECTION
+   ============================================================ */
+.merchant-create { max-width:520px; margin-bottom:28px; }
+.merchant-key-box {
+  margin-top:16px; padding:16px; border-radius:var(--radius-md);
+  background:rgba(0,230,138,.06); border:1px solid rgba(0,230,138,.15);
+  display:none; animation:fadeUp .3s ease both;
+}
+.merchant-key-box.visible { display:block; }
+.merchant-key-box .key-label { font-size:.76rem; color:var(--accent-green); font-weight:600; margin-bottom:6px; }
+.merchant-key-box .key-value {
+  font-family:'Courier New',monospace; font-size:.84rem; color:var(--text-primary);
+  word-break:break-all; background:rgba(0,0,0,.2); padding:10px 12px;
+  border-radius:var(--radius-sm); user-select:all; cursor:pointer;
+}
+.merchant-list { margin-top:8px; }
+
+/* ============================================================
+   ANALYTICS — BAR CHART
+   ============================================================ */
+.chart-container { max-width:600px; }
+.chart-bar-row {
+  display:flex; align-items:center; gap:14px; margin-bottom:14px;
+}
+.chart-bar-label {
+  width:110px; text-align:right; font-size:.82rem; font-weight:500;
+  color:var(--text-secondary); text-transform:capitalize; flex-shrink:0;
+}
+.chart-bar-track {
+  flex:1; height:28px; background:rgba(255,255,255,.04);
+  border-radius:100px; overflow:hidden; position:relative;
+}
+.chart-bar-fill {
+  height:100%; border-radius:100px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+  transition: width .8s ease; min-width:2px;
+}
+.chart-bar-value {
+  font-size:.78rem; font-weight:600; color:var(--text-primary); width:80px;
+}
+.analytics-summary {
+  display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:28px;
+  max-width:400px;
+}
+.analytics-summary .mini-stat { padding:18px; }
+.analytics-summary .mini-label { font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
+.analytics-summary .mini-value { font-size:1.3rem; font-weight:700; }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast-container { position:fixed; top:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
+.toast {
+  padding:14px 22px; border-radius:var(--radius-md);
+  background:var(--bg-card); border:1px solid var(--border-card);
+  backdrop-filter:blur(12px); box-shadow:var(--shadow);
+  font-size:.85rem; color:var(--text-primary);
+  animation: slideIn .35s ease both;
+  max-width:360px;
+}
+.toast.toast-success { border-color:rgba(0,230,138,.3); }
+.toast.toast-error   { border-color:rgba(255,77,106,.3); }
+
+/* ============================================================
+   SPINNER
+   ============================================================ */
+.spinner {
+  display:inline-block; width:18px; height:18px;
+  border:2px solid rgba(255,255,255,.15);
+  border-top-color:var(--accent-blue);
+  border-radius:50%; animation:spin .6s linear infinite;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:768px) {
+  .topbar { padding:12px 16px; }
+  .nav-tabs { padding:0 16px; }
+  .main-content { padding:20px 16px; }
+  .stats-row { grid-template-columns:1fr 1fr; gap:12px; }
+  .stat-card .stat-value { font-size:1.35rem; }
+  .pay-form .form-row { grid-template-columns:1fr; }
+  .auth-container { padding:0 16px; }
+}
+@media (max-width:480px) {
+  .stats-row { grid-template-columns:1fr; }
+  .topbar-user span { display:none; }
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity:0; transform:translateX(40px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* Stagger children */
+.stagger > *:nth-child(1) { animation-delay:.05s; }
+.stagger > *:nth-child(2) { animation-delay:.1s; }
+.stagger > *:nth-child(3) { animation-delay:.15s; }
+.stagger > *:nth-child(4) { animation-delay:.2s; }
+</style>
+</head>
+<body>
+<!-- ============================================================
+     TOAST CONTAINER
+     ============================================================ -->
+<div class="toast-container" id="toasts"></div>
+
+<!-- ============================================================
+     AUTH SCREEN
+     ============================================================ -->
+<section id="auth-screen">
+  <div class="auth-container">
+    <div class="auth-logo">
+      <h1>◈ OpenCredit</h1>
+      <p>Digital Credit &amp; Payment Infrastructure</p>
+    </div>
+    <div class="card auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login"    id="tab-login">Sign In</button>
+        <button class="auth-tab"        data-tab="register" id="tab-register">Sign Up</button>
+      </div>
+      <div id="auth-error" class="auth-error"></div>
+
+      <!-- LOGIN FORM -->
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email</label>
+          <input class="form-input" id="login-email" type="email" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input class="form-input" id="login-password" type="password" placeholder="••••••••" required minlength="8">
+        </div>
+        <button class="btn-primary" type="submit" id="login-btn">Sign In</button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="register-form" style="display:none">
+        <div class="form-group">
+          <label class="form-label" for="reg-name">Full Name</label>
+          <input class="form-input" id="reg-name" type="text" placeholder="Alice Example" required minlength="2">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-email">Email</label>
+          <input class="form-input" id="reg-email" type="email" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Password</label>
+          <input class="form-input" id="reg-password" type="password" placeholder="Min 8 characters" required minlength="8">
+        </div>
+        <button class="btn-primary" type="submit" id="reg-btn">Create Account</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     DASHBOARD SCREEN
+     ============================================================ -->
+<section id="dashboard-screen">
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-brand">◈ OpenCredit</div>
+    <div class="topbar-right">
+      <div class="topbar-user">
+        <div class="topbar-avatar" id="user-avatar">A</div>
+        <span id="user-display-name">Alice</span>
+      </div>
+      <button class="btn-logout" id="btn-logout">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-panel="overview">📊 Overview</button>
+    <button class="nav-tab"        data-panel="payments">💳 Payments</button>
+    <button class="nav-tab"        data-panel="merchants">🏪 Merchants</button>
+    <button class="nav-tab"        data-panel="analytics">📈 Analytics</button>
+  </nav>
+
+  <main class="main-content">
+    <!-- ======== OVERVIEW PANEL ======== -->
+    <div class="tab-panel active" id="panel-overview">
+      <div class="stats-row stagger">
+        <div class="card stat-card stat-accent-blue">
+          <div class="stat-label">Available Credit</div>
+          <div class="credit-ring-wrap">
+            <div class="credit-ring">
+              <svg viewBox="0 0 36 36" width="68" height="68">
+                <circle class="credit-ring-bg" cx="18" cy="18" r="15.9"/>
+                <circle class="credit-ring-fg" cx="18" cy="18" r="15.9"
+                  stroke="url(#ringGrad)" stroke-dasharray="100" stroke-dashoffset="0" id="credit-ring-circle"/>
+                <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="var(--accent-blue)"/>
+                  <stop offset="100%" stop-color="var(--accent-cyan)"/>
+                </linearGradient></defs>
+              </svg>
+              <div class="credit-ring-text" id="credit-ring-pct">100%</div>
+            </div>
+            <div>
+              <div class="stat-value" id="stat-available">$5,000</div>
+              <div class="stat-sub">of <span id="stat-limit">$5,000</span> limit</div>
+            </div>
+          </div>
+        </div>
+        <div class="card stat-card stat-accent-green">
+          <div class="stat-label">Month Spending</div>
+          <div class="stat-value" id="stat-month-total">$0.00</div>
+          <div class="stat-sub">Current billing cycle</div>
+        </div>
+        <div class="card stat-card stat-accent-purple">
+          <div class="stat-label">Utilization</div>
+          <div class="stat-value" id="stat-utilization">0%</div>
+          <div class="stat-sub">Credit utilization rate</div>
+        </div>
+        <div class="card stat-card stat-accent-amber">
+          <div class="stat-label">Transactions</div>
+          <div class="stat-value" id="stat-txn-count">0</div>
+          <div class="stat-sub">This month</div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="card">
+        <div class="card-title"><span class="icon">📋</span> Recent Transactions</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>ID</th><th>Amount</th><th>Category</th><th>Status</th><th>Fraud Score</th><th>Date</th>
+            </tr></thead>
+            <tbody id="overview-txn-body">
+              <tr><td colspan="6" class="empty-state">
+                <div class="empty-icon">💳</div>
+                <p>No transactions yet. Make your first payment!</p>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== PAYMENTS PANEL ======== -->
+    <div class="tab-panel" id="panel-payments">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><span class="icon">💸</span> New Payment</div>
+          <form class="pay-form" id="payment-form">
+            <div class="form-group">
+              <label class="form-label" for="pay-amount">Amount ($)</label>
+              <input class="form-input" id="pay-amount" type="number" step="0.01" min="0.01" placeholder="0.00" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="pay-currency">Currency</label>
+                <input class="form-input" id="pay-currency" type="text" value="USD" maxlength="8" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pay-category">Category</label>
+                <select class="form-input" id="pay-category">
+                  <option value="food">🍔 Food</option>
+                  <option value="electronics">💻 Electronics</option>
+                  <option value="travel">✈️ Travel</option>
+                  <option value="shopping">🛒 Shopping</option>
+                  <option value="entertainment">🎬 Entertainment</option>
+                  <option value="healthcare">🏥 Healthcare</option>
+                  <option value="utilities">⚡ Utilities</option>
+                  <option value="other">📦 Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="pay-geo">Region</label>
+                <select class="form-input" id="pay-geo">
+                  <option value="US">🇺🇸 US</option>
+                  <option value="EU">🇪🇺 EU</option>
+                  <option value="UK">🇬🇧 UK</option>
+                  <option value="IN">🇮🇳 IN</option>
+                  <option value="JP">🇯🇵 JP</option>
+                  <option value="OTHER">🌍 Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pay-merchant">Merchant</label>
+                <select class="form-input" id="pay-merchant">
+                  <option value="" disabled selected>Select merchant…</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-primary" type="submit" id="pay-btn">Process Payment</button>
+          </form>
+          <div id="pay-result" class="pay-result"></div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="card">
+          <div class="card-title"><span class="icon">📜</span> Payment History</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>ID</th><th>Amount</th><th>Status</th><th>Score</th>
+              </tr></thead>
+              <tbody id="payment-history-body">
+                <tr><td colspan="4" class="empty-state"><p>No payments yet</p></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== MERCHANTS PANEL ======== -->
+    <div class="tab-panel" id="panel-merchants">
+      <div class="card merchant-create">
+        <div class="card-title"><span class="icon">🏪</span> Create Merchant</div>
+        <form id="merchant-form">
+          <div class="form-group">
+            <label class="form-label" for="merchant-name">Merchant Name</label>
+            <input class="form-input" id="merchant-name" type="text" placeholder="My Store" required minlength="2">
+          </div>
+          <button class="btn-primary" type="submit" id="merchant-btn">Create Merchant</button>
+        </form>
+        <div id="merchant-key-box" class="merchant-key-box">
+          <div class="key-label">⚠️ Save this API key — it will only be shown once!</div>
+          <div class="key-value" id="merchant-key-value" title="Click to copy"></div>
+        </div>
+      </div>
+
+      <div class="card merchant-list">
+        <div class="card-title"><span class="icon">📑</span> Your Merchants</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>API Key (Hash)</th><th>Status</th></tr></thead>
+            <tbody id="merchant-list-body">
+              <tr><td colspan="4" class="empty-state"><p>No merchants created yet</p></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== ANALYTICS PANEL ======== -->
+    <div class="tab-panel" id="panel-analytics">
+      <div class="analytics-summary stagger">
+        <div class="card mini-stat">
+          <div class="mini-label">Month Total</div>
+          <div class="mini-value" id="ana-month" style="color:var(--accent-blue)">$0.00</div>
+        </div>
+        <div class="card mini-stat">
+          <div class="mini-label">Utilization</div>
+          <div class="mini-value" id="ana-util" style="color:var(--accent-purple)">0%</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📊</span> Spending by Category</div>
+        <div class="chart-container" id="category-chart">
+          <div class="empty-state">
+            <div class="empty-icon">📈</div>
+            <p>Make some transactions to see analytics</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+(() => {
+'use strict';
+
+/* ─── CONFIG ─── */
+const API = '/api/v1';
+
+/* ─── STATE ─── */
+let state = {
+  token: localStorage.getItem('oc_token') || '',
+  userName: localStorage.getItem('oc_name') || '',
+  userEmail: localStorage.getItem('oc_email') || '',
+  merchants: JSON.parse(localStorage.getItem('oc_merchants') || '[]'),
+  transactions: [],
+};
+
+/* ─── ELEMENTS ─── */
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+/* ─── HELPERS ─── */
+function api(method, path, body = null, extraHeaders = {}) {
+  const headers = { 'Content-Type': 'application/json', ...extraHeaders };
+  if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(`${API}${path}`, opts);
+}
+
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 4000);
+}
+
+function fmtCurrency(n) {
+  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function genIdempotencyKey() {
+  return 'idem-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+}
+
+/* ─── AUTH TABS ─── */
+$$('.auth-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.auth-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const isLogin = tab.dataset.tab === 'login';
+    $('#login-form').style.display = isLogin ? '' : 'none';
+    $('#register-form').style.display = isLogin ? 'none' : '';
+    $('#auth-error').classList.remove('visible');
+  });
+});
+
+function showAuthError(msg) {
+  const el = $('#auth-error');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+/* ─── REGISTER ─── */
+$('#register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('#reg-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const res = await api('POST', '/auth/register', {
+      email: $('#reg-email').value,
+      full_name: $('#reg-name').value,
+      password: $('#reg-password').value,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Registration failed');
+    state.token = data.access_token;
+    state.userName = $('#reg-name').value;
+    state.userEmail = $('#reg-email').value;
+    localStorage.setItem('oc_token', state.token);
+    localStorage.setItem('oc_name', state.userName);
+    localStorage.setItem('oc_email', state.userEmail);
+    toast('Account created! Welcome 🎉');
+    enterDashboard();
+  } catch (err) {
+    showAuthError(err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+});
+
+/* ─── LOGIN ─── */
+$('#login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('#login-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const res = await api('POST', '/auth/login', {
+      email: $('#login-email').value,
+      password: $('#login-password').value,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Login failed');
+    state.token = data.access_token;
+    state.userEmail = $('#login-email').value;
+    state.userName = state.userEmail.split('@')[0];
+    localStorage.setItem('oc_token', state.token);
+    localStorage.setItem('oc_name', state.userName);
+    localStorage.setItem('oc_email', state.userEmail);
+    toast('Welcome back!');
+    enterDashboard();
+  } catch (err) {
+    showAuthError(err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+});
+
+/* ─── ENTER DASHBOARD ─── */
+function enterDashboard() {
+  $('#auth-screen').style.display = 'none';
+  $('#dashboard-screen').style.display = '';
+  const initials = (state.userName || 'U').slice(0, 2).toUpperCase();
+  $('#user-avatar').textContent = initials;
+  $('#user-display-name').textContent = state.userName;
+  loadOverview();
+}
+
+/* ─── LOGOUT ─── */
+$('#btn-logout').addEventListener('click', () => {
+  state.token = '';
+  state.userName = '';
+  state.userEmail = '';
+  state.merchants = [];
+  state.transactions = [];
+  localStorage.removeItem('oc_token');
+  localStorage.removeItem('oc_name');
+  localStorage.removeItem('oc_email');
+  localStorage.removeItem('oc_merchants');
+  $('#auth-screen').style.display = '';
+  $('#dashboard-screen').style.display = 'none';
+  toast('Signed out', 'error');
+});
+
+/* ─── NAV TABS ─── */
+$$('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.nav-tab').forEach(t => t.classList.remove('active'));
+    $$('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $(`#panel-${tab.dataset.panel}`).classList.add('active');
+    if (tab.dataset.panel === 'overview') loadOverview();
+    if (tab.dataset.panel === 'analytics') loadAnalytics();
+    if (tab.dataset.panel === 'payments') populateMerchantDropdown();
+    if (tab.dataset.panel === 'merchants') renderMerchantList();
+  });
+});
+
+/* ─── OVERVIEW DATA ─── */
+async function loadOverview() {
+  try {
+    const res = await api('GET', '/analytics/spending-summary');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const limit = 5000;
+    const available = limit - (limit * data.utilization_pct / 100);
+    const pctAvail = 100 - data.utilization_pct;
+    const circumference = 2 * Math.PI * 15.9;
+
+    $('#stat-available').textContent = fmtCurrency(available);
+    $('#stat-limit').textContent = fmtCurrency(limit);
+    $('#stat-month-total').textContent = fmtCurrency(data.month_total);
+    $('#stat-utilization').textContent = data.utilization_pct + '%';
+
+    const offset = circumference * (1 - pctAvail / 100);
+    const ring = $('#credit-ring-circle');
+    ring.style.strokeDasharray = circumference;
+    ring.style.strokeDashoffset = offset;
+    $('#credit-ring-pct').textContent = Math.round(pctAvail) + '%';
+
+    // Category count as proxy for txn count
+    let txnCount = 0;
+    data.by_category.forEach(c => txnCount += Math.round(c.total_amount / 50) || 1);
+    $('#stat-txn-count').textContent = data.by_category.length > 0 ? data.by_category.length + '+' : '0';
+
+    renderOverviewTransactions();
+  } catch (err) {
+    console.error('Overview load error:', err);
+  }
+}
+
+function renderOverviewTransactions() {
+  const body = $('#overview-txn-body');
+  if (state.transactions.length === 0) {
+    body.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-icon">💳</div><p>No transactions yet. Make your first payment!</p></td></tr>';
+    return;
+  }
+  body.innerHTML = state.transactions.slice().reverse().slice(0, 10).map(tx => `
+    <tr>
+      <td>#${tx.transaction_id}</td>
+      <td style="font-weight:600">${fmtCurrency(tx.amount)}</td>
+      <td style="text-transform:capitalize">${tx.category || '-'}</td>
+      <td><span class="badge badge-${tx.status}">${tx.status}</span></td>
+      <td>${(tx.fraud_score * 100).toFixed(1)}%</td>
+      <td style="color:var(--text-secondary);font-size:.8rem">${new Date(tx.created_at).toLocaleString()}</td>
+    </tr>
+  `).join('');
+}
+
+/* ─── PAYMENTS ─── */
+function populateMerchantDropdown() {
+  const sel = $('#pay-merchant');
+  const current = sel.value;
+  sel.innerHTML = '<option value="" disabled selected>Select merchant…</option>';
+  state.merchants.forEach(m => {
+    sel.innerHTML += `<option value="${m.api_key}">${m.name} (#${m.id})</option>`;
+  });
+  if (current) sel.value = current;
+}
+
+$('#payment-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('#pay-btn');
+  const result = $('#pay-result');
+  const apiKey = $('#pay-merchant').value;
+  if (!apiKey) { toast('Please select a merchant first', 'error'); return; }
+
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  result.classList.remove('visible', 'success', 'error');
+
+  try {
+    const res = await api('POST', '/payments', {
+      amount: parseFloat($('#pay-amount').value),
+      currency: $('#pay-currency').value.toUpperCase(),
+      category: $('#pay-category').value,
+      geo: $('#pay-geo').value,
+      idempotency_key: genIdempotencyKey(),
+    }, { 'X-API-Key': apiKey });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Payment failed');
+
+    data.amount = parseFloat($('#pay-amount').value);
+    data.category = $('#pay-category').value;
+    state.transactions.push(data);
+
+    result.className = 'pay-result visible success';
+    result.innerHTML = `
+      ✅ <strong>Payment ${data.status.toUpperCase()}</strong><br>
+      Transaction #${data.transaction_id} — ${fmtCurrency(data.amount)}<br>
+      Fraud score: ${(data.fraud_score * 100).toFixed(1)}% · Credit remaining: ${fmtCurrency(data.available_credit)}
+    `;
+    toast(`Payment ${data.status}: ${fmtCurrency(data.amount)}`);
+
+    renderPaymentHistory();
+    $('#pay-amount').value = '';
+  } catch (err) {
+    result.className = 'pay-result visible error';
+    result.textContent = '❌ ' + err.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Process Payment';
+  }
+});
+
+function renderPaymentHistory() {
+  const body = $('#payment-history-body');
+  if (state.transactions.length === 0) {
+    body.innerHTML = '<tr><td colspan="4" class="empty-state"><p>No payments yet</p></td></tr>';
+    return;
+  }
+  body.innerHTML = state.transactions.slice().reverse().map(tx => `
+    <tr>
+      <td>#${tx.transaction_id}</td>
+      <td style="font-weight:600">${fmtCurrency(tx.amount)}</td>
+      <td><span class="badge badge-${tx.status}">${tx.status}</span></td>
+      <td>${(tx.fraud_score * 100).toFixed(1)}%</td>
+    </tr>
+  `).join('');
+}
+
+/* ─── MERCHANTS ─── */
+$('#merchant-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('#merchant-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  const keyBox = $('#merchant-key-box');
+  keyBox.classList.remove('visible');
+
+  try {
+    const res = await api('POST', '/merchants', { name: $('#merchant-name').value });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to create merchant');
+
+    const m = { id: data.merchant_id, name: data.name, api_key: data.api_key };
+    state.merchants.push(m);
+    localStorage.setItem('oc_merchants', JSON.stringify(state.merchants));
+
+    $('#merchant-key-value').textContent = data.api_key;
+    keyBox.classList.add('visible');
+    toast(`Merchant "${data.name}" created!`);
+    renderMerchantList();
+    $('#merchant-name').value = '';
+  } catch (err) {
+    toast(err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Merchant';
+  }
+});
+
+$('#merchant-key-value').addEventListener('click', () => {
+  navigator.clipboard.writeText($('#merchant-key-value').textContent);
+  toast('API key copied to clipboard!');
+});
+
+function renderMerchantList() {
+  const body = $('#merchant-list-body');
+  if (state.merchants.length === 0) {
+    body.innerHTML = '<tr><td colspan="4" class="empty-state"><p>No merchants created yet</p></td></tr>';
+    return;
+  }
+  body.innerHTML = state.merchants.map(m => `
+    <tr>
+      <td>#${m.id}</td>
+      <td style="font-weight:600">${m.name}</td>
+      <td style="font-family:monospace;font-size:.78rem;color:var(--text-muted)">${m.api_key.slice(0, 16)}…</td>
+      <td><span class="badge badge-approved">Active</span></td>
+    </tr>
+  `).join('');
+}
+
+/* ─── ANALYTICS ─── */
+async function loadAnalytics() {
+  try {
+    const res = await api('GET', '/analytics/spending-summary');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    $('#ana-month').textContent = fmtCurrency(data.month_total);
+    $('#ana-util').textContent = data.utilization_pct + '%';
+
+    const chart = $('#category-chart');
+    if (data.by_category.length === 0) {
+      chart.innerHTML = '<div class="empty-state"><div class="empty-icon">📈</div><p>Make some transactions to see analytics</p></div>';
+      return;
+    }
+    const max = Math.max(...data.by_category.map(c => c.total_amount));
+    const colors = ['#4f7cff','#00d4ff','#7c5cff','#00e68a','#ffb444','#ff4d6a','#e066ff','#66ffcc'];
+    chart.innerHTML = data.by_category.map((c, i) => {
+      const pct = (c.total_amount / max * 100).toFixed(1);
+      const color = colors[i % colors.length];
+      return `
+        <div class="chart-bar-row">
+          <div class="chart-bar-label">${c.category}</div>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${color},${color}99)"></div>
+          </div>
+          <div class="chart-bar-value">${fmtCurrency(c.total_amount)}</div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Analytics error:', err);
+  }
+}
+
+/* ─── INIT ─── */
+if (state.token) {
+  // Quick validate token
+  api('GET', '/analytics/spending-summary').then(res => {
+    if (res.ok) { enterDashboard(); }
+    else {
+      localStorage.removeItem('oc_token');
+      state.token = '';
+    }
+  }).catch(() => {});
+}
+
+})();
+</script>
+</body>
+</html>

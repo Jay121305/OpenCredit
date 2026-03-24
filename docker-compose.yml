@@ -1,0 +1,93 @@
+services:
+  # ── Nginx Reverse Proxy (HTTPS termination) ───────────────────
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: opencredit-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    # For production, mount real SSL certificates:
+    # volumes:
+    #   - /etc/letsencrypt/live/yourdomain.com/fullchain.pem:/etc/nginx/ssl/cert.pem:ro
+    #   - /etc/letsencrypt/live/yourdomain.com/privkey.pem:/etc/nginx/ssl/key.pem:ro
+
+  # ── API Server ────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opencredit-api
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Remove port exposure in production (use nginx only)
+    # ports:
+    #   - "8000:8000"
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  # ── Analytics Worker ──────────────────────────────────────────
+  analytics-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opencredit-analytics-worker
+    command: ["python", "-m", "app.workers.analytics_worker"]
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── PostgreSQL Database ───────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: opencredit-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-opencredit}
+      POSTGRES_USER: ${POSTGRES_USER:-opencredit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+    # Remove port exposure in production
+    # ports:
+    #   - "5432:5432"
+    expose:
+      - "5432"
+    volumes:
+      - opencredit_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opencredit"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # ── Redis Cache/Event Bus ─────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: opencredit-redis
+    # Remove port exposure in production
+    # ports:
+    #   - "6379:6379"
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  opencredit_pg_data:
