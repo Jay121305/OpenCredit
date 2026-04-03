@@ -25,7 +25,7 @@ from app.core.security import (
     hash_api_key,
     create_access_token,
 )
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.merchant import Merchant
 from app.models.credit import CreditAccount
 
@@ -122,3 +122,52 @@ def auth_headers(seed_user, seed_merchant):
     merchant, api_key = seed_merchant()
     headers = {"Authorization": f"Bearer {token}", "X-API-Key": api_key}
     return headers, user, merchant
+
+
+@pytest.fixture()
+def seed_admin(db: Session):
+    """Create an admin user and return (user, jwt_token)."""
+    def _create(
+        email: str = "admin@example.com",
+        full_name: str = "Admin User",
+        password: str = "AdminPass123!",
+    ):
+        user = User(
+            email=email,
+            full_name=full_name,
+            password_hash=hash_password(password),
+            role=UserRole.ADMIN.value,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        token = create_access_token(subject=user.email)
+        return user, token
+
+    return _create
+
+
+@pytest.fixture()
+def admin_headers(seed_admin):
+    """Convenience: creates an admin user and returns headers dict."""
+    user, token = seed_admin()
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture()
+def create_user_with_role(db: Session):
+    """Factory to create users with specific roles."""
+    def _create(role: UserRole, email: str = None):
+        email = email or f"{role.value}_{id(role)}@example.com"
+        user = User(
+            email=email,
+            full_name=f"{role.value.title()} User",
+            password_hash=hash_password("TestPass123!"),
+            role=role.value,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        token = create_access_token(subject=user.email)
+        return user, {"Authorization": f"Bearer {token}"}
+    return _create

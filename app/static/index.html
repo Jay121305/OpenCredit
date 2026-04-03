@@ -149,6 +149,11 @@ body::before {
 }
 .form-input:focus { border-color:var(--border-focus); background:rgba(255,255,255,.06); }
 .form-input::placeholder { color:var(--text-muted); }
+.form-input option {
+  background:var(--bg-secondary); 
+  color:var(--text-primary);
+  padding:8px;
+}
 .btn-primary {
   width:100%; padding:14px; border-radius:var(--radius-sm); border:none;
   background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
@@ -560,10 +565,6 @@ tbody tr:hover { background:rgba(79,124,255,.04); }
             </div>
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="pay-currency">Currency</label>
-                <input class="form-input" id="pay-currency" type="text" value="USD" maxlength="8" required>
-              </div>
-              <div class="form-group">
                 <label class="form-label" for="pay-category">Category</label>
                 <select class="form-input" id="pay-category">
                   <option value="food">🍔 Food</option>
@@ -581,19 +582,17 @@ tbody tr:hover { background:rgba(79,124,255,.04); }
               <div class="form-group">
                 <label class="form-label" for="pay-geo">Region</label>
                 <select class="form-input" id="pay-geo">
-                  <option value="US">🇺🇸 US</option>
-                  <option value="EU">🇪🇺 EU</option>
-                  <option value="UK">🇬🇧 UK</option>
-                  <option value="IN">🇮🇳 IN</option>
-                  <option value="JP">🇯🇵 JP</option>
-                  <option value="OTHER">🌍 Other</option>
+                  <option value="US" data-currency="USD">🇺🇸 US (USD)</option>
+                  <option value="EU" data-currency="EUR">🇪🇺 EU (EUR)</option>
+                  <option value="UK" data-currency="GBP">🇬🇧 UK (GBP)</option>
+                  <option value="IN" data-currency="INR">🇮🇳 India (INR)</option>
+                  <option value="JP" data-currency="JPY">🇯🇵 Japan (JPY)</option>
+                  <option value="OTHER" data-currency="USD">🌍 Other (USD)</option>
                 </select>
               </div>
               <div class="form-group">
-                <label class="form-label" for="pay-merchant">Merchant</label>
-                <select class="form-input" id="pay-merchant">
-                  <option value="" disabled selected>Select merchant…</option>
-                </select>
+                <label class="form-label" for="pay-currency">Currency</label>
+                <input class="form-input" id="pay-currency" type="text" value="USD" maxlength="8" readonly style="background: rgba(255,255,255,.02); cursor: not-allowed;">
               </div>
             </div>
             <button class="btn-primary" type="submit" id="pay-btn">Process Payment</button>
@@ -751,7 +750,12 @@ $('#register-form').addEventListener('submit', async (e) => {
       password: $('#reg-password').value,
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Registration failed');
+    if (!res.ok) {
+      const errorMsg = typeof data.detail === 'string' 
+        ? data.detail 
+        : (data.detail?.msg || JSON.stringify(data.detail) || 'Registration failed');
+      throw new Error(errorMsg);
+    }
     state.token = data.access_token;
     state.userName = $('#reg-name').value;
     state.userEmail = $('#reg-email').value;
@@ -778,7 +782,12 @@ $('#login-form').addEventListener('submit', async (e) => {
       password: $('#login-password').value,
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Login failed');
+    if (!res.ok) {
+      const errorMsg = typeof data.detail === 'string' 
+        ? data.detail 
+        : (data.detail?.msg || JSON.stringify(data.detail) || 'Login failed');
+      throw new Error(errorMsg);
+    }
     state.token = data.access_token;
     state.userEmail = $('#login-email').value;
     state.userName = state.userEmail.split('@')[0];
@@ -795,12 +804,16 @@ $('#login-form').addEventListener('submit', async (e) => {
 });
 
 /* ─── ENTER DASHBOARD ─── */
-function enterDashboard() {
+async function enterDashboard() {
   $('#auth-screen').style.display = 'none';
-  $('#dashboard-screen').style.display = '';
+  $('#dashboard-screen').style.display = 'block';
   const initials = (state.userName || 'U').slice(0, 2).toUpperCase();
   $('#user-avatar').textContent = initials;
   $('#user-display-name').textContent = state.userName;
+  
+  // Load merchants for payment dropdown
+  await loadMerchants();
+  
   loadOverview();
 }
 
@@ -815,7 +828,7 @@ $('#btn-logout').addEventListener('click', () => {
   localStorage.removeItem('oc_name');
   localStorage.removeItem('oc_email');
   localStorage.removeItem('oc_merchants');
-  $('#auth-screen').style.display = '';
+  $('#auth-screen').style.display = 'flex';
   $('#dashboard-screen').style.display = 'none';
   toast('Signed out', 'error');
 });
@@ -841,8 +854,8 @@ async function loadOverview() {
     if (!res.ok) return;
     const data = await res.json();
 
-    const limit = 5000;
-    const available = limit - (limit * data.utilization_pct / 100);
+    const limit = data.credit_limit || 5000;
+    const available = data.available_credit || (limit - (limit * data.utilization_pct / 100));
     const pctAvail = 100 - data.utilization_pct;
     const circumference = 2 * Math.PI * 15.9;
 
@@ -887,15 +900,64 @@ function renderOverviewTransactions() {
 }
 
 /* ─── PAYMENTS ─── */
+async function loadMerchants() {
+  try {
+    // Load merchants from localStorage (includes API keys from when they were created)
+    const storedMerchants = JSON.parse(localStorage.getItem('oc_merchants') || '[]');
+    
+    // Fetch current merchant list from API (to get any new ones or updates)
+    const res = await api('GET', '/merchants');
+    if (res.ok) {
+      const apiMerchants = await res.json();
+      
+      // Merge: keep API keys from localStorage for merchants we created
+      state.merchants = apiMerchants.map(m => {
+        const stored = storedMerchants.find(sm => sm.id === m.id);
+        return {
+          id: m.id,
+          name: m.name,
+          api_key: stored?.api_key || '' // Keep stored API key if we have it
+        };
+      });
+    } else {
+      // Fallback to localStorage only
+      state.merchants = storedMerchants;
+    }
+    
+    populateMerchantDropdown();
+  } catch (err) {
+    console.error('Failed to load merchants:', err);
+    // Fallback to localStorage
+    state.merchants = JSON.parse(localStorage.getItem('oc_merchants') || '[]');
+    populateMerchantDropdown();
+  }
+}
+
 function populateMerchantDropdown() {
   const sel = $('#pay-merchant');
   const current = sel.value;
   sel.innerHTML = '<option value="" disabled selected>Select merchant…</option>';
   state.merchants.forEach(m => {
-    sel.innerHTML += `<option value="${m.api_key}">${m.name} (#${m.id})</option>`;
+    // Only show merchants that have API keys (ones we created)
+    if (m.api_key) {
+      sel.innerHTML += `<option value="${m.api_key}">${m.name} (#${m.id})</option>`;
+    }
   });
+  
+  // Show hint if no merchants with API keys
+  if (state.merchants.filter(m => m.api_key).length === 0) {
+    sel.innerHTML += `<option value="" disabled>⚠️ Create a merchant first in the Merchants tab</option>`;
+  }
+  
   if (current) sel.value = current;
 }
+
+// Auto-update currency when region changes
+$('#pay-geo').addEventListener('change', (e) => {
+  const selectedOption = e.target.options[e.target.selectedIndex];
+  const currency = selectedOption.dataset.currency || 'USD';
+  $('#pay-currency').value = currency;
+});
 
 $('#payment-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -908,6 +970,14 @@ $('#payment-form').addEventListener('submit', async (e) => {
   result.classList.remove('visible', 'success', 'error');
 
   try {
+    console.log('Payment request:', {
+      amount: parseFloat($('#pay-amount').value),
+      currency: $('#pay-currency').value.toUpperCase(),
+      category: $('#pay-category').value,
+      geo: $('#pay-geo').value,
+      apiKey: apiKey.substring(0, 20) + '...'
+    });
+    
     const res = await api('POST', '/payments', {
       amount: parseFloat($('#pay-amount').value),
       currency: $('#pay-currency').value.toUpperCase(),
@@ -917,6 +987,7 @@ $('#payment-form').addEventListener('submit', async (e) => {
     }, { 'X-API-Key': apiKey });
 
     const data = await res.json();
+    console.log('Payment response:', res.status, data);
     if (!res.ok) throw new Error(data.detail || 'Payment failed');
 
     data.amount = parseFloat($('#pay-amount').value);

@@ -4,8 +4,16 @@ Dependency injection for API authentication and authorization.
 Provides:
 - get_current_user: JWT-based user authentication
 - get_current_active_user: Active user validation
-- get_current_admin_user: Admin role validation
+- get_current_viewer_user: Minimum read-only access (viewer+)
+- get_current_analyst_user: Analyst access for records/analytics (analyst+)
+- get_current_admin_user: Admin role validation (admin only)
 - get_merchant_by_api_key: API key-based merchant authentication (supports key rotation)
+
+Role Hierarchy (lowest to highest):
+- viewer: Read-only dashboard access
+- user: Standard user access  
+- analyst: Create/edit records + full analytics
+- admin: Full administrative access
 """
 
 from datetime import datetime, timedelta
@@ -76,9 +84,48 @@ def get_current_active_user(user: User = Depends(get_current_user)) -> User:
     return user
 
 
+def get_current_viewer_user(user: User = Depends(get_current_active_user)) -> User:
+    """
+    Get current user with at least viewer access (read-only dashboard).
+    
+    Minimum role: viewer
+    Allowed roles: viewer, user, analyst, admin
+    
+    Raises:
+        HTTPException 403: If user doesn't have minimum viewer access
+    """
+    if not user.is_viewer:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Viewer access required",
+        )
+    return user
+
+
+def get_current_analyst_user(user: User = Depends(get_current_active_user)) -> User:
+    """
+    Get current user with analyst access (create/edit records + analytics).
+    
+    Minimum role: analyst
+    Allowed roles: analyst, admin
+    
+    Raises:
+        HTTPException 403: If user doesn't have analyst access
+    """
+    if not user.is_analyst:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Analyst privileges required",
+        )
+    return user
+
+
 def get_current_admin_user(user: User = Depends(get_current_active_user)) -> User:
     """
     Get the current user and verify they have admin role.
+    
+    Minimum role: admin
+    Allowed roles: admin only
     
     Raises:
         HTTPException 403: If user is not an admin
@@ -89,6 +136,26 @@ def get_current_admin_user(user: User = Depends(get_current_active_user)) -> Use
             detail="Admin privileges required",
         )
     return user
+
+
+def require_role(minimum_role: UserRole):
+    """
+    Factory function to create role-based dependency with custom minimum role.
+    
+    Usage:
+        @router.get("/endpoint")
+        def endpoint(user: User = Depends(require_role(UserRole.ANALYST))):
+            ...
+    """
+    def role_checker(user: User = Depends(get_current_active_user)) -> User:
+        min_level = UserRole.get_access_level(minimum_role.value)
+        if user.access_level < min_level:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"{minimum_role.value.title()} privileges required",
+            )
+        return user
+    return role_checker
 
 
 def get_merchant_by_api_key(

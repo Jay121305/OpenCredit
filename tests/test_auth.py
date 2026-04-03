@@ -9,7 +9,7 @@ class TestRegister:
             json={
                 "email": "bob@example.com",
                 "full_name": "Bob Tester",
-                "password": "StrongPass99",
+                "password": "StrongPass99!",
             },
         )
         assert resp.status_code == 201
@@ -21,7 +21,7 @@ class TestRegister:
         payload = {
             "email": "dup@example.com",
             "full_name": "Dup User",
-            "password": "StrongPass99",
+            "password": "StrongPass99!",
         }
         first = client.post("/api/v1/auth/register", json=payload)
         assert first.status_code == 201
@@ -47,7 +47,7 @@ class TestRegister:
             json={
                 "email": "short@example.com",
                 "full_name": "Short Pw",
-                "password": "abc",
+                "password": "Abc1!",
             },
         )
         assert resp.status_code == 422
@@ -60,13 +60,13 @@ class TestLogin:
             json={
                 "email": "login_user@example.com",
                 "full_name": "Login User",
-                "password": "StrongPass99",
+                "password": "StrongPass99!",
             },
         )
 
         resp = client.post(
             "/api/v1/auth/login",
-            json={"email": "login_user@example.com", "password": "StrongPass99"},
+            json={"email": "login_user@example.com", "password": "StrongPass99!"},
         )
         assert resp.status_code == 200
         assert "access_token" in resp.json()
@@ -77,13 +77,13 @@ class TestLogin:
             json={
                 "email": "wp@example.com",
                 "full_name": "Wrong Pass",
-                "password": "StrongPass99",
+                "password": "StrongPass99!",
             },
         )
 
         resp = client.post(
             "/api/v1/auth/login",
-            json={"email": "wp@example.com", "password": "WrongPassword1"},
+            json={"email": "wp@example.com", "password": "WrongPassword1!"},
         )
         assert resp.status_code == 401
 

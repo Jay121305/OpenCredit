@@ -2,21 +2,28 @@
 
 
 class TestMerchantCreate:
-    def test_create_merchant_success(self, client):
-        resp = client.post("/api/v1/merchants", json={"name": "Test Store"})
+    def test_create_merchant_success(self, client, admin_headers):
+        resp = client.post("/api/v1/merchants", json={"name": "Test Store"}, headers=admin_headers)
         assert resp.status_code == 201
         body = resp.json()
         assert body["name"] == "Test Store"
         assert body["merchant_id"] > 0
         assert body["api_key"].startswith("oc_live_")
 
-    def test_create_merchant_short_name_rejected(self, client):
-        resp = client.post("/api/v1/merchants", json={"name": "A"})
+    def test_create_merchant_short_name_rejected(self, client, admin_headers):
+        resp = client.post("/api/v1/merchants", json={"name": "A"}, headers=admin_headers)
         assert resp.status_code == 422
 
-    def test_create_multiple_merchants(self, client):
-        resp1 = client.post("/api/v1/merchants", json={"name": "Store Alpha"})
-        resp2 = client.post("/api/v1/merchants", json={"name": "Store Beta"})
+    def test_create_multiple_merchants(self, client, admin_headers):
+        resp1 = client.post("/api/v1/merchants", json={"name": "Store Alpha"}, headers=admin_headers)
+        resp2 = client.post("/api/v1/merchants", json={"name": "Store Beta"}, headers=admin_headers)
         assert resp1.status_code == 201
         assert resp2.status_code == 201
         assert resp1.json()["api_key"] != resp2.json()["api_key"]
+    
+    def test_create_merchant_requires_admin(self, client, seed_user):
+        """Non-admin users cannot create merchants."""
+        user, token = seed_user()
+        headers = {"Authorization": f"Bearer {token}"}
+        resp = client.post("/api/v1/merchants", json={"name": "Unauthorized Store"}, headers=headers)
+        assert resp.status_code == 403

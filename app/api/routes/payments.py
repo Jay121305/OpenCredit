@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+import traceback
 
 from app.api.deps import get_current_user, get_merchant_by_api_key
 from app.db.session import get_db
@@ -42,4 +43,6 @@ def create_payment(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Payment processing failed") from exc
+        print(f"Payment error: {exc}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Payment processing failed: {str(exc)}") from exc

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_admin_user
+from app.api.deps import get_current_user, get_current_admin_user
 from app.core.config import settings
 from app.core.security import generate_merchant_api_key, hash_api_key
 from app.db.session import get_db
@@ -36,17 +36,17 @@ KEY_ROTATION_GRACE_PERIOD_DAYS = 7
     response_model=MerchantCreateResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new merchant",
-    description="Create a new merchant account and generate an API key. **Requires admin privileges.**",
+    description="Create a new merchant account and generate an API key. **Available to all authenticated users.**",
 )
 def create_merchant(
     payload: MerchantCreateRequest,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin_user),
+    current_user: User = Depends(get_current_user),
 ) -> MerchantCreateResponse:
     """
     Create a new merchant account.
     
-    - Requires admin authentication
+    - Requires user authentication
     - Generates a unique API key for the merchant
     - API key is only shown once - store it securely!
     
@@ -76,15 +76,30 @@ def create_merchant(
 
 
 @router.get(
+    "",
+    response_model=list[MerchantResponse],
+    summary="List all merchants",
+    description="Retrieve all active merchants. **Available to all authenticated users.**",
+)
+def list_merchants(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[MerchantResponse]:
+    """List all active merchants."""
+    merchants = db.query(Merchant).filter(Merchant.is_active == True).all()
+    return [MerchantResponse.model_validate(m) for m in merchants]
+
+
+@router.get(
     "/{merchant_id}",
     response_model=MerchantResponse,
     summary="Get merchant details",
-    description="Retrieve merchant information. **Requires admin privileges.**",
+    description="Retrieve merchant information. **Available to all authenticated users.**",
 )
 def get_merchant(
     merchant_id: int,
     db: Session = Depends(get_db),
-    admin: User = Depends(get_current_admin_user),
+    current_user: User = Depends(get_current_user),
 ) -> MerchantResponse:
     """Get merchant details by ID."""
     merchant = db.query(Merchant).filter(Merchant.id == merchant_id).first()

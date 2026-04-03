@@ -4,7 +4,22 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routes import analytics, auth, health, merchants, payments
+from app.api.routes import (
+    analytics,
+    auth,
+    dashboard,
+    disputes,
+    fx,
+    health,
+    kyc,
+    merchants,
+    mfa,
+    payments,
+    records,
+    refunds,
+    users,
+    webhooks,
+)
 from app.core.config import settings
 from app.core.logging import configure_logging
 from app.core.metrics import setup_metrics
@@ -37,7 +52,8 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def serve_frontend() -> HTMLResponse:
     """Serve the main dashboard UI."""
-    return HTMLResponse((STATIC_DIR / "index.html").read_text(encoding="utf-8"))
+    content = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    return HTMLResponse(content, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -55,3 +71,13 @@ app.include_router(auth.router, prefix=settings.api_prefix)
 app.include_router(merchants.router, prefix=settings.api_prefix)
 app.include_router(payments.router, prefix=settings.api_prefix)
 app.include_router(analytics.router, prefix=settings.api_prefix)
+app.include_router(records.router, prefix=settings.api_prefix)
+app.include_router(dashboard.router, prefix=settings.api_prefix)
+app.include_router(users.router, prefix=settings.api_prefix)
+app.include_router(mfa.router, prefix=settings.api_prefix)
+app.include_router(kyc.router, prefix=settings.api_prefix)
+app.include_router(webhooks.router, prefix=settings.api_prefix)
+app.include_router(refunds.router, prefix=settings.api_prefix)
+app.include_router(refunds.chargeback_router, prefix=settings.api_prefix)
+app.include_router(disputes.router, prefix=settings.api_prefix)
+app.include_router(fx.router, prefix=settings.api_prefix)

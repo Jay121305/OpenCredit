@@ -1,0 +1,18 @@
+services:
+  api:
+    user: root
+    env_file:
+      - .env
+      - .env.docker
+    command: ["sh", "-c", "pip install --no-cache-dir resend python-multipart twilio pyotp qrcode[pil] && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
+
+  analytics-worker:
+    env_file:
+      - .env
+      - .env.docker
+
+  postgres:
+    environment:
+      POSTGRES_DB: opencredit
+      POSTGRES_USER: opencredit
+      POSTGRES_PASSWORD: opencredit

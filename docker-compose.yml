@@ -30,9 +30,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    # Remove port exposure in production (use nginx only)
-    # ports:
-    #   - "8000:8000"
+    # Direct port access for development
+    ports:
+      - "8000:8000"
     expose:
       - "8000"
     restart: unless-stopped

@@ -19,7 +19,7 @@ from app.core.security import hash_password, create_access_token
 from app.models.user import User, UserRole
 from app.models.credit import CreditAccount
 from app.models.merchant import Merchant
-from app.models.ledger import LedgerEntry
+from app.models.ledger import LedgerBlock
 
 
 # ============================================================================
@@ -73,27 +73,17 @@ class TestUserJourney:
         )
         assert register_resp.status_code == 201, register_resp.json()
         user_data = register_resp.json()
-        assert user_data["email"] == "testuser@example.com"
-        assert user_data["credit_limit"] > 0
+        assert "access_token" in user_data
+        user_token = user_data["access_token"]
         
-        # Step 3: User logs in
-        login_resp = client.post(
-            "/api/v1/auth/login",
-            data={"username": "testuser@example.com", "password": "SecurePass123!"},
-        )
-        assert login_resp.status_code == 200, login_resp.json()
-        token_data = login_resp.json()
-        assert "access_token" in token_data
-        user_token = token_data["access_token"]
-        
-        # Step 4: User makes a payment
+        # Step 3: User makes a payment (login not needed, we already have token from register)
         payment_resp = client.post(
             "/api/v1/payments",
             json={
                 "amount": 50.00,
                 "currency": "USD",
                 "category": "electronics",
-                "description": "Test purchase",
+                "geo": "US",
                 "idempotency_key": "test-journey-001",
             },
             headers={
@@ -106,14 +96,14 @@ class TestUserJourney:
         assert payment_data["status"] == "approved"
         assert payment_data["fraud_score"] < 0.75
         
-        # Step 5: Check user info (credit reduced)
-        me_resp = client.get(
-            "/api/v1/auth/me",
+        # Step 4: Check analytics (credit reduced)
+        analytics_resp = client.get(
+            "/api/v1/analytics/spending-summary",
             headers={"Authorization": f"Bearer {user_token}"},
         )
-        assert me_resp.status_code == 200
-        me_data = me_resp.json()
-        assert me_data["available_credit"] < me_data["credit_limit"]
+        assert analytics_resp.status_code == 200
+        analytics_data = analytics_resp.json()
+        assert analytics_data["available_credit"] < analytics_data["credit_limit"]
     
     def test_user_cannot_exceed_credit_limit(self, client: TestClient, seed_user, seed_merchant):
         """User cannot make payment exceeding their credit limit."""
@@ -127,7 +117,7 @@ class TestUserJourney:
                 "amount": 150.00,
                 "currency": "USD",
                 "category": "shopping",
-                "description": "Over limit purchase",
+                "geo": "US",
                 "idempotency_key": "overlimit-001",
             },
             headers={
@@ -135,8 +125,10 @@ class TestUserJourney:
                 "X-API-Key": api_key,
             },
         )
-        assert payment_resp.status_code == 400
-        assert "insufficient" in payment_resp.json()["detail"].lower()
+        # Payment should be rejected (status in response, not HTTP error)
+        assert payment_resp.status_code == 200
+        data = payment_resp.json()
+        assert data["status"] == "rejected"
 
 
 # ============================================================================
@@ -158,7 +150,7 @@ class TestFraudDetection:
                 "amount": 8000.00,  # Very high value
                 "currency": "USD",
                 "category": "luxury",
-                "description": "Expensive item",
+                "geo": "US",
                 "idempotency_key": "highvalue-001",
             },
             headers={
@@ -234,18 +226,18 @@ class TestLedgerIntegrity:
             )
         
         # Verify ledger entries exist and are chained
-        ledger_entries = db.query(LedgerEntry).order_by(LedgerEntry.created_at).all()
+        ledger_entries = db.query(LedgerBlock).order_by(LedgerBlock.id).all()
         
         if len(ledger_entries) >= 2:
             # First entry should have previous_hash of zeros or initial hash
             first_entry = ledger_entries[0]
-            assert first_entry.current_hash is not None
+            assert first_entry.block_hash is not None
             
             # Subsequent entries should reference previous entry's hash
             for i in range(1, len(ledger_entries)):
                 current = ledger_entries[i]
                 previous = ledger_entries[i - 1]
-                assert current.previous_hash == previous.current_hash, \
+                assert current.previous_hash == previous.block_hash, \
                     f"Entry {i} should reference previous entry's hash"
 
 
@@ -313,7 +305,7 @@ class TestApiKeyRotation:
                 "amount": 10.00,
                 "currency": "USD",
                 "category": "test",
-                "description": "New key test",
+                "geo": "US",
                 "idempotency_key": "newkey-001",
             },
             headers={
@@ -330,7 +322,7 @@ class TestApiKeyRotation:
                 "amount": 10.00,
                 "currency": "USD",
                 "category": "test",
-                "description": "Old key test",
+                "geo": "US",
                 "idempotency_key": "oldkey-001",
             },
             headers={
@@ -397,7 +389,7 @@ class TestApiKeyRotation:
                 "amount": 10.00,
                 "currency": "USD",
                 "category": "test",
-                "description": "Revoked key test",
+                "geo": "US",
                 "idempotency_key": "revoked-001",
             },
             headers={
@@ -452,7 +444,7 @@ class TestIdempotency:
             "amount": 100.00,
             "currency": "USD",
             "category": "test",
-            "description": "Idempotent payment",
+            "geo": "US",
             "idempotency_key": "idempotent-test-001",
         }
         headers = {
@@ -548,7 +540,7 @@ class TestInputValidation:
                 "amount": -50.00,  # Negative amount
                 "currency": "USD",
                 "category": "test",
-                "description": "Negative test",
+                "geo": "US",
                 "idempotency_key": "negative-001",
             },
             headers={
@@ -569,7 +561,7 @@ class TestInputValidation:
                 "amount": 999_999_999.99,  # Exceeds max transaction amount
                 "currency": "USD",
                 "category": "test",
-                "description": "Excessive test",
+                "geo": "US",
                 "idempotency_key": "excessive-001",
             },
             headers={

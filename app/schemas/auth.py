@@ -14,6 +14,8 @@ from typing import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
+from app.models.user import UserRole
+
 
 # Disposable email domains to reject
 DISPOSABLE_EMAIL_DOMAINS = {
@@ -44,6 +46,11 @@ class RegisterRequest(BaseModel):
         max_length=128,
         description="Password with uppercase, lowercase, digit, and special character",
         json_schema_extra={"example": "SecurePass123!"}
+    )
+    role: UserRole = Field(
+        default=UserRole.USER,
+        description="User role (VIEWER, USER, ANALYST, ADMIN)",
+        json_schema_extra={"example": "USER"}
     )
 
     @field_validator("email")

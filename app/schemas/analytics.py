@@ -9,4 +9,6 @@ class SpendingCategoryItem(BaseModel):
 class SpendingSummaryResponse(BaseModel):
     month_total: float
     utilization_pct: float
+    credit_limit: float
+    available_credit: float
     by_category: list[SpendingCategoryItem]

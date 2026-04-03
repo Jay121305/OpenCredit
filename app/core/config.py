@@ -69,6 +69,57 @@ class Settings(BaseSettings):
     # ─────────────────────────────────────────────────────────────────────────
     cors_origins: str = "http://localhost:3000,http://localhost:8000"
 
+    # ─────────────────────────────────────────────────────────────────────────
+    # Email Configuration (Resend)
+    # ─────────────────────────────────────────────────────────────────────────
+    email_provider: str = "resend"
+    resend_api_key: str = ""
+    email_from: str = "OpenCredit <noreply@opencredit.io>"
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # SMS Configuration (Twilio)
+    # ─────────────────────────────────────────────────────────────────────────
+    sms_provider: str = "twilio"
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_phone_number: str = ""
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Currency Exchange (ExchangeRate-API)
+    # ─────────────────────────────────────────────────────────────────────────
+    fx_provider: str = "exchangerate_api"
+    exchangerate_api_key: str = ""
+    fx_base_currency: str = "USD"
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # KYC Configuration
+    # ─────────────────────────────────────────────────────────────────────────
+    kyc_provider: str = "manual"
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Sanctions Screening
+    # ─────────────────────────────────────────────────────────────────────────
+    sanctions_provider: str = "ofac_sdn"
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # 2FA Configuration
+    # ─────────────────────────────────────────────────────────────────────────
+    totp_issuer: str = "OpenCredit"
+    otp_expiry_seconds: int = 300  # 5 minutes
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Webhooks
+    # ─────────────────────────────────────────────────────────────────────────
+    WEBHOOK_TIMEOUT: int = 30
+    WEBHOOK_MAX_RETRIES: int = 3
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # Backup & Disaster Recovery
+    # ─────────────────────────────────────────────────────────────────────────
+    BACKUP_DIR: str = "backups"
+    BACKUP_RETENTION_DAYS: int = 30
+    BACKUP_RETENTION_COUNT: int = 10
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @property

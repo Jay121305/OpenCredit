@@ -19,7 +19,12 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenRe
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
 
-    user = User(email=payload.email, full_name=payload.full_name, password_hash=hash_password(payload.password))
+    user = User(
+        email=payload.email,
+        full_name=payload.full_name,
+        password_hash=hash_password(payload.password),
+        role=payload.role
+    )
     db.add(user)
     db.flush()
     db.add(CreditAccount(

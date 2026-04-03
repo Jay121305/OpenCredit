@@ -34,6 +34,7 @@ def upgrade() -> None:
         sa.Column('email', sa.String(length=255), nullable=False),
         sa.Column('full_name', sa.String(length=255), nullable=False),
         sa.Column('password_hash', sa.String(length=255), nullable=False),
+        sa.Column('role', sa.String(length=20), nullable=False, server_default='user'),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='1'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('CURRENT_TIMESTAMP')),
         sa.PrimaryKeyConstraint('id'),
@@ -61,12 +62,15 @@ def upgrade() -> None:
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('name', sa.String(length=255), nullable=False),
         sa.Column('api_key_hash', sa.String(length=64), nullable=False),
+        sa.Column('api_key_hash_secondary', sa.String(length=64), nullable=True),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='1'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('CURRENT_TIMESTAMP')),
+        sa.Column('key_rotated_at', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
     )
     op.create_index('ix_merchants_id', 'merchants', ['id'])
     op.create_index('ix_merchants_api_key_hash', 'merchants', ['api_key_hash'], unique=True)
+    op.create_index('ix_merchants_api_key_hash_secondary', 'merchants', ['api_key_hash_secondary'])
 
     # Transactions table
     op.create_table(
