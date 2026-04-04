@@ -560,6 +560,23 @@ tbody tr:hover { background:rgba(79,124,255,.04); }
           <div class="card-title"><span class="icon">💸</span> New Payment</div>
           <form class="pay-form" id="payment-form">
             <div class="form-group">
+              <label class="form-label" for="pay-merchant">Merchant</label>
+              <select class="form-input" id="pay-merchant" required>
+                <option value="" disabled selected>Loading merchants...</option>
+              </select>
+              <div style="margin-top: 0.5rem;">
+                <label style="font-size: 0.9rem; cursor: pointer; color: #888;">
+                  <input type="checkbox" id="use-custom-key" style="margin-right: 0.5rem;">
+                  Use custom API key
+                </label>
+              </div>
+            </div>
+            <div class="form-group" id="custom-key-group" style="display: none;">
+              <label class="form-label" for="pay-custom-key">API Key (oc_live_...)</label>
+              <input class="form-input" id="pay-custom-key" type="text" placeholder="oc_live_your_api_key_here">
+              <small style="color: #888; font-size: 0.85rem;">For testing with existing merchant keys</small>
+            </div>
+            <div class="form-group">
               <label class="form-label" for="pay-amount">Amount ($)</label>
               <input class="form-input" id="pay-amount" type="number" step="0.01" min="0.01" placeholder="0.00" required>
             </div>
@@ -952,6 +969,24 @@ function populateMerchantDropdown() {
   if (current) sel.value = current;
 }
 
+// Toggle custom API key input
+$('#use-custom-key').addEventListener('change', (e) => {
+  const customKeyGroup = $('#custom-key-group');
+  const merchantSelect = $('#pay-merchant');
+  
+  if (e.target.checked) {
+    customKeyGroup.style.display = 'block';
+    merchantSelect.required = false;
+    merchantSelect.disabled = true;
+    $('#pay-custom-key').required = true;
+  } else {
+    customKeyGroup.style.display = 'none';
+    merchantSelect.required = true;
+    merchantSelect.disabled = false;
+    $('#pay-custom-key').required = false;
+  }
+});
+
 // Auto-update currency when region changes
 $('#pay-geo').addEventListener('change', (e) => {
   const selectedOption = e.target.options[e.target.selectedIndex];
@@ -963,8 +998,15 @@ $('#payment-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = $('#pay-btn');
   const result = $('#pay-result');
-  const apiKey = $('#pay-merchant').value;
-  if (!apiKey) { toast('Please select a merchant first', 'error'); return; }
+  
+  // Get API key from either dropdown or custom input
+  const useCustom = $('#use-custom-key').checked;
+  const apiKey = useCustom ? $('#pay-custom-key').value : $('#pay-merchant').value;
+  
+  if (!apiKey || apiKey === '') {
+    toast('Please select a merchant or enter an API key', 'error');
+    return;
+  }
 
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
   result.classList.remove('visible', 'success', 'error');
