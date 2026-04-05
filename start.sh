@@ -7,7 +7,12 @@
 
 set -e  # Exit on error
 
+# Set PYTHONPATH so Python can find the app module
+export PYTHONPATH=/app:$PYTHONPATH
+
 echo "🚀 Starting OpenCredit API deployment..."
+echo "📍 Working directory: $(pwd)"
+echo "🐍 Python path: $PYTHONPATH"
 
 # Run database migrations (ignore errors if already applied)
 echo "📊 Running database migrations..."
