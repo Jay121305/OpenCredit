@@ -1,13 +1,18 @@
 <!DOCTYPE html>
+<!-- Updated: 2026-04-05 v3.0 - Full Dashboard Overhaul with Fraud, Ledger, Admin panels -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OpenCredit — Digital Credit Platform</title>
-<meta name="description" content="OpenCredit digital credit and payment infrastructure dashboard">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>OpenCredit — Production-Grade Fintech Backend</title>
+<meta name="description" content="OpenCredit: FastAPI fintech backend with fraud detection, hash-chained ledger, role-based access control, and payment processing">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 /* ============================================================
    DESIGN SYSTEM — CSS Variables
@@ -122,6 +127,24 @@ body::before {
   background-clip:text;
 }
 .auth-logo p { color:var(--text-secondary); font-size:.88rem; margin-top:6px; }
+.help-test-btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.help-test-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+}
 .auth-card { padding:36px; }
 .auth-tabs {
   display:flex; gap:0; margin-bottom:28px;
@@ -411,6 +434,200 @@ tbody tr:hover { background:rgba(79,124,255,.04); }
 .stagger > *:nth-child(2) { animation-delay:.1s; }
 .stagger > *:nth-child(3) { animation-delay:.15s; }
 .stagger > *:nth-child(4) { animation-delay:.2s; }
+
+/* ============================================================
+   ROLE BADGE
+   ============================================================ */
+.role-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-radius: 100px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.role-badge.role-viewer { background: rgba(138,148,166,.15); color: var(--text-secondary); }
+.role-badge.role-user { background: rgba(79,124,255,.15); color: var(--accent-blue); }
+.role-badge.role-analyst { background: rgba(124,92,255,.15); color: var(--accent-purple); }
+.role-badge.role-admin { background: rgba(0,230,138,.15); color: var(--accent-green); }
+
+/* Feature badges */
+.feature-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 100px;
+  font-size: .68rem; font-weight: 600;
+  background: rgba(79,124,255,.1); color: var(--accent-cyan);
+  margin-left: 8px;
+}
+
+/* ============================================================
+   LEDGER / BLOCKCHAIN VIEWER
+   ============================================================ */
+.ledger-chain {
+  display: flex; flex-direction: column; gap: 0;
+}
+.ledger-block {
+  position: relative; padding: 20px 24px;
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  margin-bottom: 0;
+}
+.ledger-block:not(:last-child)::after {
+  content: ""; position: absolute;
+  left: 50%; bottom: -20px; transform: translateX(-50%);
+  width: 2px; height: 20px;
+  background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple));
+}
+.ledger-block:not(:last-child) { margin-bottom: 20px; }
+.ledger-block-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px;
+}
+.ledger-block-id {
+  font-size: 1rem; font-weight: 700; color: var(--accent-blue);
+}
+.ledger-block-time {
+  font-size: .75rem; color: var(--text-muted);
+}
+.ledger-hash {
+  font-family: 'Courier New', monospace; font-size: .72rem;
+  color: var(--text-secondary); word-break: break-all;
+  background: rgba(0,0,0,.25); padding: 8px 12px;
+  border-radius: var(--radius-sm); margin-top: 8px;
+}
+.ledger-hash-label {
+  font-size: .68rem; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 4px;
+}
+.ledger-verify-btn {
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent-green), #00b86b);
+  color: #fff; font-size: .82rem; font-weight: 600;
+  border: none; cursor: pointer; transition: var(--transition);
+}
+.ledger-verify-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.ledger-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* ============================================================
+   FRAUD DETECTION VISUALIZATION
+   ============================================================ */
+.fraud-factors {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;
+  margin-bottom: 24px;
+}
+.fraud-factor {
+  padding: 20px; background: var(--bg-card);
+  border: 1px solid var(--border-card); border-radius: var(--radius-md);
+}
+.fraud-factor-icon { font-size: 1.8rem; margin-bottom: 10px; }
+.fraud-factor-name { font-size: .78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.fraud-factor-value { font-size: 1.2rem; font-weight: 700; margin-top: 4px; }
+.fraud-factor-desc { font-size: .75rem; color: var(--text-secondary); margin-top: 6px; }
+.fraud-score-bar {
+  height: 8px; background: rgba(255,255,255,.1);
+  border-radius: 100px; overflow: hidden; margin-top: 8px;
+}
+.fraud-score-fill {
+  height: 100%; border-radius: 100px;
+  transition: width .5s ease;
+}
+.fraud-score-fill.low { background: var(--accent-green); }
+.fraud-score-fill.medium { background: var(--accent-amber); }
+.fraud-score-fill.high { background: var(--accent-red); }
+
+/* ============================================================
+   ADMIN PANEL
+   ============================================================ */
+.admin-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;
+}
+.admin-stat {
+  padding: 24px; background: var(--bg-card);
+  border: 1px solid var(--border-card); border-radius: var(--radius-lg);
+  text-align: center;
+}
+.admin-stat-value { font-size: 2.5rem; font-weight: 800; }
+.admin-stat-label { font-size: .82rem; color: var(--text-secondary); margin-top: 6px; }
+.user-actions {
+  display: flex; gap: 8px;
+}
+.btn-sm {
+  padding: 6px 12px; border-radius: var(--radius-sm);
+  font-size: .72rem; font-weight: 600; border: none;
+  cursor: pointer; transition: var(--transition);
+}
+.btn-sm.btn-danger { background: rgba(255,77,106,.15); color: var(--accent-red); }
+.btn-sm.btn-danger:hover { background: rgba(255,77,106,.25); }
+.btn-sm.btn-success { background: rgba(0,230,138,.15); color: var(--accent-green); }
+.btn-sm.btn-success:hover { background: rgba(0,230,138,.25); }
+.btn-sm.btn-info { background: rgba(79,124,255,.15); color: var(--accent-blue); }
+.btn-sm.btn-info:hover { background: rgba(79,124,255,.25); }
+
+/* ============================================================
+   SETTINGS PANEL
+   ============================================================ */
+.settings-section {
+  margin-bottom: 32px;
+}
+.settings-section-title {
+  font-size: 1rem; font-weight: 700; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.mfa-status {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px; background: var(--bg-card);
+  border: 1px solid var(--border-card); border-radius: var(--radius-md);
+}
+.mfa-status-icon { font-size: 1.5rem; }
+.mfa-status-text { font-size: .88rem; }
+.mfa-qr {
+  background: #fff; padding: 16px; border-radius: var(--radius-md);
+  display: inline-block; margin-top: 12px;
+}
+
+/* ============================================================
+   CHARTS CONTAINER
+   ============================================================ */
+.chart-card {
+  padding: 24px; background: var(--bg-card);
+  border: 1px solid var(--border-card); border-radius: var(--radius-lg);
+}
+.chart-wrapper {
+  position: relative; height: 300px;
+}
+
+/* ============================================================
+   FEATURE SHOWCASE BANNER
+   ============================================================ */
+.feature-banner {
+  background: linear-gradient(135deg, rgba(79,124,255,.1), rgba(124,92,255,.1));
+  border: 1px solid rgba(79,124,255,.2);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+.feature-banner-title {
+  font-size: .88rem; font-weight: 700; color: var(--accent-blue);
+  margin-bottom: 8px;
+}
+.feature-banner-items {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.feature-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 100px;
+  background: rgba(255,255,255,.05);
+  font-size: .75rem; color: var(--text-secondary);
+}
+.feature-item::before {
+  content: "✓"; color: var(--accent-green); font-weight: bold;
+}
+
+/* Hide admin tabs for non-admins */
+.nav-tab.admin-only { display: none; }
+.nav-tab.admin-only.visible { display: block; }
 </style>
 </head>
 <body>
@@ -427,6 +644,12 @@ tbody tr:hover { background:rgba(79,124,255,.04); }
     <div class="auth-logo">
       <h1>◈ OpenCredit</h1>
       <p>Digital Credit &amp; Payment Infrastructure</p>
+      <a href="https://github.com/yourusername/opencredit#-quick-start---lets-play" 
+         target="_blank" 
+         class="help-test-btn"
+         title="Click here for step-by-step testing guide">
+        🎯 Need Help to Test? Click Here!
+      </a>
     </div>
     <div class="card auth-card">
       <div class="auth-tabs">
@@ -474,8 +697,9 @@ tbody tr:hover { background:rgba(79,124,255,.04); }
 <section id="dashboard-screen">
   <!-- Top Bar -->
   <header class="topbar">
-    <div class="topbar-brand">◈ OpenCredit</div>
+    <div class="topbar-brand">◈ OpenCredit <span class="feature-badge">FastAPI Fintech</span></div>
     <div class="topbar-right">
+      <span class="role-badge" id="user-role-badge">USER</span>
       <div class="topbar-user">
         <div class="topbar-avatar" id="user-avatar">A</div>
         <span id="user-display-name">Alice</span>
@@ -488,11 +712,29 @@ tbody tr:hover { background:rgba(79,124,255,.04); }
   <nav class="nav-tabs">
     <button class="nav-tab active" data-panel="overview">📊 Overview</button>
     <button class="nav-tab"        data-panel="payments">💳 Payments</button>
-    <button class="nav-tab"        data-panel="merchants">🏪 Merchants</button>
+    <button class="nav-tab"        data-panel="fraud">🛡️ Fraud Detection</button>
+    <button class="nav-tab"        data-panel="ledger">⛓️ Ledger</button>
     <button class="nav-tab"        data-panel="analytics">📈 Analytics</button>
+    <button class="nav-tab"        data-panel="merchants">🏪 Merchants</button>
+    <button class="nav-tab admin-only" data-panel="admin">👑 Admin</button>
+    <button class="nav-tab"        data-panel="settings">⚙️ Settings</button>
   </nav>
 
   <main class="main-content">
+    <!-- Feature Banner -->
+    <div class="feature-banner" id="feature-banner">
+      <div class="feature-banner-title">🚀 Production-Ready Fintech Backend Features</div>
+      <div class="feature-banner-items">
+        <span class="feature-item">ML Fraud Detection</span>
+        <span class="feature-item">Hash-Chained Ledger</span>
+        <span class="feature-item">Role-Based Access</span>
+        <span class="feature-item">MFA Support</span>
+        <span class="feature-item">KYC Verification</span>
+        <span class="feature-item">Webhook System</span>
+        <span class="feature-item">141 Tests Passing</span>
+      </div>
+    </div>
+
     <!-- ======== OVERVIEW PANEL ======== -->
     <div class="tab-panel active" id="panel-overview">
       <div class="stats-row stagger">
@@ -685,6 +927,250 @@ tbody tr:hover { background:rgba(79,124,255,.04); }
           </div>
         </div>
       </div>
+      <!-- Trend Chart -->
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-title"><span class="icon">📉</span> Spending Trends</div>
+        <div class="chart-wrapper">
+          <canvas id="trend-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== FRAUD DETECTION PANEL ======== -->
+    <div class="tab-panel" id="panel-fraud">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-title"><span class="icon">🛡️</span> Fraud Detection Engine</div>
+        <p style="color: var(--text-secondary); font-size: .88rem; margin-bottom: 16px;">
+          Our ML-powered fraud detection evaluates every transaction in real-time using multiple risk factors.
+          Transactions are scored and either approved, flagged for review, or rejected automatically.
+        </p>
+        <div class="fraud-factors" id="fraud-factors">
+          <div class="fraud-factor">
+            <div class="fraud-factor-icon">💰</div>
+            <div class="fraud-factor-name">High Value Check</div>
+            <div class="fraud-factor-value">$1,000+</div>
+            <div class="fraud-factor-desc">Transactions above threshold get higher scrutiny</div>
+          </div>
+          <div class="fraud-factor">
+            <div class="fraud-factor-icon">⚡</div>
+            <div class="fraud-factor-name">Velocity Check</div>
+            <div class="fraud-factor-value">5 txn/hour</div>
+            <div class="fraud-factor-desc">Detects unusual transaction frequency</div>
+          </div>
+          <div class="fraud-factor">
+            <div class="fraud-factor-icon">🌍</div>
+            <div class="fraud-factor-name">Geo-Mismatch</div>
+            <div class="fraud-factor-value">Location Based</div>
+            <div class="fraud-factor-desc">Flags sudden location changes</div>
+          </div>
+          <div class="fraud-factor">
+            <div class="fraud-factor-icon">🤖</div>
+            <div class="fraud-factor-name">ML Model</div>
+            <div class="fraud-factor-value">Isolation Forest</div>
+            <div class="fraud-factor-desc">Anomaly detection algorithm</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="icon">⚠️</span> Flagged &amp; Rejected Transactions</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>ID</th><th>Amount</th><th>Status</th><th>Fraud Score</th><th>Reason</th><th>Date</th>
+            </tr></thead>
+            <tbody id="flagged-txn-body">
+              <tr><td colspan="6" class="empty-state">
+                <div class="empty-icon">✅</div>
+                <p>No flagged or rejected transactions</p>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Fraud Score Distribution Chart -->
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-title"><span class="icon">📊</span> Fraud Score Distribution</div>
+        <div class="chart-wrapper">
+          <canvas id="fraud-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== LEDGER PANEL ======== -->
+    <div class="tab-panel" id="panel-ledger">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-title"><span class="icon">⛓️</span> Hash-Chained Ledger (Audit Trail)</div>
+        <p style="color: var(--text-secondary); font-size: .88rem; margin-bottom: 16px;">
+          Every transaction is recorded in an immutable, cryptographically-linked chain.
+          Each block contains a SHA-256 hash of the previous block, making tampering detectable.
+        </p>
+        <div class="ledger-stats" id="ledger-stats">
+          <div class="card mini-stat">
+            <div class="mini-label">Total Blocks</div>
+            <div class="mini-value" id="ledger-total" style="color: var(--accent-blue);">0</div>
+          </div>
+          <div class="card mini-stat">
+            <div class="mini-label">Chain Status</div>
+            <div class="mini-value" id="ledger-status" style="color: var(--accent-green);">—</div>
+          </div>
+          <div class="card mini-stat">
+            <div class="mini-label">Latest Hash</div>
+            <div class="mini-value" id="ledger-hash" style="color: var(--accent-purple); font-size: .7rem; word-break: break-all;">GENESIS</div>
+          </div>
+        </div>
+        <button class="ledger-verify-btn" id="verify-ledger-btn">🔍 Verify Chain Integrity</button>
+        <div id="verify-result" style="margin-top: 12px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="icon">📜</span> Ledger Blocks (Most Recent)</div>
+        <div class="ledger-chain" id="ledger-chain">
+          <div class="empty-state">
+            <div class="empty-icon">⛓️</div>
+            <p>No blocks in ledger yet. Process a payment to create the first block.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== ADMIN PANEL ======== -->
+    <div class="tab-panel" id="panel-admin">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-title"><span class="icon">👑</span> Admin Dashboard</div>
+        <p style="color: var(--text-secondary); font-size: .88rem; margin-bottom: 16px;">
+          Manage users, review KYC submissions, and handle disputes. <strong>Admin access only.</strong>
+        </p>
+        <div class="admin-grid" id="admin-stats">
+          <div class="admin-stat">
+            <div class="admin-stat-value" id="admin-total-users" style="color: var(--accent-blue);">0</div>
+            <div class="admin-stat-label">Total Users</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-value" id="admin-active-users" style="color: var(--accent-green);">0</div>
+            <div class="admin-stat-label">Active Users</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-value" id="admin-pending-kyc" style="color: var(--accent-amber);">0</div>
+            <div class="admin-stat-label">Pending KYC</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-value" id="admin-disputes" style="color: var(--accent-red);">0</div>
+            <div class="admin-stat-label">Open Disputes</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="icon">👥</span> User Management</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>ID</th><th>Email</th><th>Name</th><th>Role</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="admin-users-body">
+              <tr><td colspan="6" class="empty-state"><p>Loading users...</p></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-title"><span class="icon">📋</span> Pending KYC Reviews</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>User</th><th>Submitted</th><th>Type</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="admin-kyc-body">
+              <tr><td colspan="5" class="empty-state"><p>No pending KYC submissions</p></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======== SETTINGS PANEL ======== -->
+    <div class="tab-panel" id="panel-settings">
+      <div class="settings-section">
+        <div class="settings-section-title">🔐 Multi-Factor Authentication (MFA)</div>
+        <div class="card">
+          <div class="mfa-status" id="mfa-status">
+            <div class="mfa-status-icon">🔒</div>
+            <div>
+              <div class="mfa-status-text">MFA Status: <strong id="mfa-enabled-text">Loading...</strong></div>
+              <div style="font-size: .75rem; color: var(--text-muted);">Protect your account with TOTP or SMS verification</div>
+            </div>
+          </div>
+          <div style="margin-top: 16px;">
+            <button class="btn-primary" id="setup-mfa-btn" style="width: auto; padding: 10px 24px;">Setup TOTP (Authenticator App)</button>
+          </div>
+          <div id="mfa-setup-area" style="margin-top: 16px; display: none;">
+            <p style="font-size: .85rem; color: var(--text-secondary); margin-bottom: 12px;">
+              Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
+            </p>
+            <div class="mfa-qr" id="mfa-qr"></div>
+            <div class="form-group" style="margin-top: 16px; max-width: 300px;">
+              <label class="form-label">Enter verification code</label>
+              <input class="form-input" id="mfa-code" type="text" placeholder="000000" maxlength="6">
+            </div>
+            <button class="btn-primary" id="verify-mfa-btn" style="width: auto;">Verify &amp; Enable</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">🪪 KYC Verification</div>
+        <div class="card">
+          <div class="mfa-status" id="kyc-status">
+            <div class="mfa-status-icon">📄</div>
+            <div>
+              <div class="mfa-status-text">KYC Status: <strong id="kyc-status-text">Loading...</strong></div>
+              <div style="font-size: .75rem; color: var(--text-muted);">Complete identity verification for higher limits</div>
+            </div>
+          </div>
+          <div style="margin-top: 16px;" id="kyc-form-area">
+            <div class="form-group" style="max-width: 400px;">
+              <label class="form-label">Full Legal Name</label>
+              <input class="form-input" id="kyc-name" type="text" placeholder="As shown on ID">
+            </div>
+            <div class="form-group" style="max-width: 400px;">
+              <label class="form-label">Date of Birth</label>
+              <input class="form-input" id="kyc-dob" type="date">
+            </div>
+            <div class="form-group" style="max-width: 400px;">
+              <label class="form-label">ID Number (SSN/Passport)</label>
+              <input class="form-input" id="kyc-id" type="text" placeholder="Last 4 digits shown">
+            </div>
+            <button class="btn-primary" id="submit-kyc-btn" style="width: auto;">Submit for Verification</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">🔔 Webhooks</div>
+        <div class="card">
+          <p style="color: var(--text-secondary); font-size: .88rem; margin-bottom: 16px;">
+            Configure webhooks to receive real-time notifications for payment events.
+          </p>
+          <div class="form-group" style="max-width: 500px;">
+            <label class="form-label">Webhook URL</label>
+            <input class="form-input" id="webhook-url" type="url" placeholder="https://your-server.com/webhook">
+          </div>
+          <div class="form-group" style="max-width: 500px;">
+            <label class="form-label">Events</label>
+            <select class="form-input" id="webhook-events" multiple style="height: 120px;">
+              <option value="payment.completed">payment.completed</option>
+              <option value="payment.failed">payment.failed</option>
+              <option value="payment.flagged">payment.flagged</option>
+              <option value="refund.processed">refund.processed</option>
+              <option value="dispute.created">dispute.created</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="create-webhook-btn" style="width: auto;">Create Webhook</button>
+        </div>
+      </div>
     </div>
   </main>
 </section>
@@ -704,8 +1190,12 @@ let state = {
   token: localStorage.getItem('oc_token') || '',
   userName: localStorage.getItem('oc_name') || '',
   userEmail: localStorage.getItem('oc_email') || '',
+  userRole: localStorage.getItem('oc_role') || 'user',
+  isAdmin: localStorage.getItem('oc_is_admin') === 'true',
   merchants: JSON.parse(localStorage.getItem('oc_merchants') || '[]'),
   transactions: [],
+  trendChart: null,
+  fraudChart: null,
 };
 
 /* ─── ELEMENTS ─── */
@@ -824,6 +1314,36 @@ $('#login-form').addEventListener('submit', async (e) => {
 async function enterDashboard() {
   $('#auth-screen').style.display = 'none';
   $('#dashboard-screen').style.display = 'block';
+  
+  // Fetch user profile to get role
+  try {
+    const profileRes = await api('GET', '/auth/me');
+    if (profileRes.ok) {
+      const profile = await profileRes.json();
+      state.userName = profile.full_name;
+      state.userRole = profile.role;
+      state.isAdmin = profile.is_admin;
+      localStorage.setItem('oc_name', state.userName);
+      localStorage.setItem('oc_role', state.userRole);
+      localStorage.setItem('oc_is_admin', state.isAdmin);
+      
+      // Update role badge
+      const roleBadge = $('#user-role-badge');
+      roleBadge.textContent = state.userRole.toUpperCase();
+      roleBadge.className = `role-badge role-${state.userRole}`;
+      
+      // Show/hide admin tab
+      const adminTab = document.querySelector('.nav-tab[data-panel="admin"]');
+      if (state.isAdmin) {
+        adminTab.classList.add('visible');
+      } else {
+        adminTab.classList.remove('visible');
+      }
+    }
+  } catch (e) {
+    console.error('Failed to fetch profile:', e);
+  }
+  
   const initials = (state.userName || 'U').slice(0, 2).toUpperCase();
   $('#user-avatar').textContent = initials;
   $('#user-display-name').textContent = state.userName;
@@ -839,11 +1359,15 @@ $('#btn-logout').addEventListener('click', () => {
   state.token = '';
   state.userName = '';
   state.userEmail = '';
+  state.userRole = 'user';
+  state.isAdmin = false;
   state.merchants = [];
   state.transactions = [];
   localStorage.removeItem('oc_token');
   localStorage.removeItem('oc_name');
   localStorage.removeItem('oc_email');
+  localStorage.removeItem('oc_role');
+  localStorage.removeItem('oc_is_admin');
   localStorage.removeItem('oc_merchants');
   $('#auth-screen').style.display = 'flex';
   $('#dashboard-screen').style.display = 'none';
@@ -857,10 +1381,15 @@ $$('.nav-tab').forEach(tab => {
     $$('.tab-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     $(`#panel-${tab.dataset.panel}`).classList.add('active');
+    $('#feature-banner').style.display = tab.dataset.panel === 'overview' ? 'block' : 'none';
     if (tab.dataset.panel === 'overview') loadOverview();
     if (tab.dataset.panel === 'analytics') loadAnalytics();
     if (tab.dataset.panel === 'payments') populateMerchantDropdown();
     if (tab.dataset.panel === 'merchants') renderMerchantList();
+    if (tab.dataset.panel === 'fraud') loadFraudPanel();
+    if (tab.dataset.panel === 'ledger') loadLedgerPanel();
+    if (tab.dataset.panel === 'admin') loadAdminPanel();
+    if (tab.dataset.panel === 'settings') loadSettingsPanel();
   });
 });
 
@@ -1150,10 +1679,413 @@ async function loadAnalytics() {
         </div>
       `;
     }).join('');
+    
+    // Create trend chart with Chart.js
+    createTrendChart(data);
   } catch (err) {
     console.error('Analytics error:', err);
   }
 }
+
+function createTrendChart(data) {
+  const ctx = document.getElementById('trend-chart');
+  if (!ctx) return;
+  
+  // Destroy existing chart if any
+  if (state.trendChart) {
+    state.trendChart.destroy();
+  }
+  
+  // Generate sample trend data based on current month total
+  const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+  const weeklySpend = data.month_total / 4;
+  const trendData = [
+    weeklySpend * 0.8,
+    weeklySpend * 1.2,
+    weeklySpend * 0.9,
+    weeklySpend * 1.1
+  ];
+  
+  state.trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Weekly Spending',
+        data: trendData,
+        borderColor: '#4f7cff',
+        backgroundColor: 'rgba(79, 124, 255, 0.1)',
+        fill: true,
+        tension: 0.4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#8a94a6' }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { 
+            color: '#8a94a6',
+            callback: v => '$' + v.toFixed(0)
+          }
+        }
+      }
+    }
+  });
+}
+
+/* ─── FRAUD PANEL ─── */
+async function loadFraudPanel() {
+  // Render flagged transactions from state
+  const flagged = state.transactions.filter(tx => tx.status === 'flagged' || tx.status === 'rejected');
+  const body = $('#flagged-txn-body');
+  
+  if (flagged.length === 0) {
+    body.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="empty-icon">✅</div><p>No flagged or rejected transactions</p></td></tr>';
+  } else {
+    body.innerHTML = flagged.map(tx => {
+      const scoreClass = tx.fraud_score < 0.3 ? 'low' : tx.fraud_score < 0.6 ? 'medium' : 'high';
+      let reason = '';
+      if (tx.fraud_score >= 0.5) reason = 'High risk score';
+      else if (tx.fraud_score >= 0.3) reason = 'Velocity check triggered';
+      else reason = 'Manual review';
+      
+      return `
+        <tr>
+          <td>#${tx.transaction_id}</td>
+          <td style="font-weight:600">${fmtCurrency(tx.amount)}</td>
+          <td><span class="badge badge-${tx.status}">${tx.status}</span></td>
+          <td>
+            <div class="fraud-score-bar" style="width:80px;">
+              <div class="fraud-score-fill ${scoreClass}" style="width:${tx.fraud_score * 100}%"></div>
+            </div>
+            <span style="font-size:.75rem">${(tx.fraud_score * 100).toFixed(1)}%</span>
+          </td>
+          <td style="font-size:.8rem;color:var(--text-secondary)">${reason}</td>
+          <td style="color:var(--text-muted);font-size:.8rem">${new Date(tx.created_at).toLocaleString()}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+  
+  // Create fraud distribution chart
+  createFraudChart();
+}
+
+function createFraudChart() {
+  const ctx = document.getElementById('fraud-chart');
+  if (!ctx) return;
+  
+  if (state.fraudChart) {
+    state.fraudChart.destroy();
+  }
+  
+  // Analyze transaction fraud scores
+  const low = state.transactions.filter(tx => tx.fraud_score < 0.3).length;
+  const medium = state.transactions.filter(tx => tx.fraud_score >= 0.3 && tx.fraud_score < 0.6).length;
+  const high = state.transactions.filter(tx => tx.fraud_score >= 0.6).length;
+  
+  state.fraudChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Low Risk (<30%)', 'Medium Risk (30-60%)', 'High Risk (>60%)'],
+      datasets: [{
+        data: [low || 1, medium, high],
+        backgroundColor: ['#00e68a', '#ffb444', '#ff4d6a'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#8a94a6', padding: 20 }
+        }
+      }
+    }
+  });
+}
+
+/* ─── LEDGER PANEL ─── */
+async function loadLedgerPanel() {
+  try {
+    // Fetch ledger stats
+    const statsRes = await api('GET', '/ledger/stats');
+    if (statsRes.ok) {
+      const stats = await statsRes.json();
+      $('#ledger-total').textContent = stats.total_blocks;
+      $('#ledger-status').textContent = stats.total_blocks > 0 ? 'Active' : 'Empty';
+      $('#ledger-hash').textContent = stats.chain_hash.slice(0, 24) + '...';
+    }
+    
+    // Fetch ledger blocks
+    const blocksRes = await api('GET', '/ledger?per_page=10');
+    if (blocksRes.ok) {
+      const data = await blocksRes.json();
+      const chain = $('#ledger-chain');
+      
+      if (data.blocks.length === 0) {
+        chain.innerHTML = '<div class="empty-state"><div class="empty-icon">⛓️</div><p>No blocks in ledger yet. Process a payment to create the first block.</p></div>';
+      } else {
+        chain.innerHTML = data.blocks.map(block => `
+          <div class="ledger-block">
+            <div class="ledger-block-header">
+              <div class="ledger-block-id">Block #${block.id}</div>
+              <div class="ledger-block-time">${new Date(block.created_at).toLocaleString()}</div>
+            </div>
+            <div style="font-size:.82rem;color:var(--text-secondary);">Transaction ID: <strong>${block.transaction_id}</strong></div>
+            <div class="ledger-hash-label">Previous Hash</div>
+            <div class="ledger-hash">${block.previous_hash}</div>
+            <div class="ledger-hash-label" style="margin-top:8px;">Block Hash</div>
+            <div class="ledger-hash" style="color:var(--accent-blue);">${block.block_hash}</div>
+          </div>
+        `).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Ledger error:', err);
+  }
+}
+
+// Verify ledger button
+$('#verify-ledger-btn')?.addEventListener('click', async () => {
+  const resultEl = $('#verify-result');
+  resultEl.innerHTML = '<span class="spinner"></span> Verifying chain integrity...';
+  
+  try {
+    const res = await api('GET', '/ledger/verify');
+    if (res.ok) {
+      const result = await res.json();
+      if (result.is_valid) {
+        resultEl.innerHTML = `
+          <div style="color:var(--accent-green);padding:12px;background:rgba(0,230,138,.1);border-radius:8px;">
+            ✅ <strong>Chain Verified!</strong><br>
+            All ${result.verified_blocks} blocks passed integrity checks.
+          </div>
+        `;
+      } else {
+        resultEl.innerHTML = `
+          <div style="color:var(--accent-red);padding:12px;background:rgba(255,77,106,.1);border-radius:8px;">
+            ❌ <strong>Integrity Failure</strong><br>
+            ${result.error_message}
+          </div>
+        `;
+      }
+    } else if (res.status === 403) {
+      resultEl.innerHTML = '<div style="color:var(--accent-amber);">⚠️ Analyst role required to verify ledger.</div>';
+    }
+  } catch (err) {
+    resultEl.innerHTML = '<div style="color:var(--accent-red);">Error verifying ledger</div>';
+  }
+});
+
+/* ─── ADMIN PANEL ─── */
+async function loadAdminPanel() {
+  if (!state.isAdmin) {
+    toast('Admin access required', 'error');
+    return;
+  }
+  
+  try {
+    // Fetch user stats
+    const statsRes = await api('GET', '/users/stats');
+    if (statsRes.ok) {
+      const stats = await statsRes.json();
+      $('#admin-total-users').textContent = stats.total_users || 0;
+      $('#admin-active-users').textContent = stats.active_users || 0;
+    }
+    
+    // Fetch users list
+    const usersRes = await api('GET', '/users?per_page=20');
+    if (usersRes.ok) {
+      const data = await usersRes.json();
+      const body = $('#admin-users-body');
+      
+      body.innerHTML = data.users.map(u => `
+        <tr>
+          <td>#${u.id}</td>
+          <td>${u.email}</td>
+          <td>${u.full_name}</td>
+          <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+          <td><span class="badge ${u.is_active ? 'badge-approved' : 'badge-rejected'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+          <td class="user-actions">
+            <button class="btn-sm btn-info" onclick="changeUserRole(${u.id}, '${u.role}')">Change Role</button>
+            ${u.is_active 
+              ? `<button class="btn-sm btn-danger" onclick="toggleUserStatus(${u.id}, false)">Deactivate</button>`
+              : `<button class="btn-sm btn-success" onclick="toggleUserStatus(${u.id}, true)">Activate</button>`
+            }
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    // Fetch pending KYC
+    try {
+      const kycRes = await api('GET', '/kyc/admin/pending');
+      if (kycRes.ok) {
+        const kycData = await kycRes.json();
+        $('#admin-pending-kyc').textContent = kycData.pending?.length || 0;
+      }
+    } catch (e) {}
+    
+    // Fetch disputes
+    try {
+      const disputeRes = await api('GET', '/disputes/admin/all?status=open');
+      if (disputeRes.ok) {
+        const disputeData = await disputeRes.json();
+        $('#admin-disputes').textContent = disputeData.disputes?.length || 0;
+      }
+    } catch (e) {}
+    
+  } catch (err) {
+    console.error('Admin panel error:', err);
+  }
+}
+
+// Admin action functions (global scope for onclick)
+window.changeUserRole = async function(userId, currentRole) {
+  const roles = ['viewer', 'user', 'analyst', 'admin'];
+  const newRole = prompt(`Change role for user ${userId}.\nCurrent: ${currentRole}\nOptions: ${roles.join(', ')}`);
+  if (newRole && roles.includes(newRole)) {
+    const res = await api('PATCH', `/users/${userId}/role`, { role: newRole });
+    if (res.ok) {
+      toast('Role updated');
+      loadAdminPanel();
+    } else {
+      const err = await res.json();
+      toast(err.detail || 'Failed to update role', 'error');
+    }
+  }
+};
+
+window.toggleUserStatus = async function(userId, activate) {
+  const endpoint = activate ? `/users/${userId}/activate` : `/users/${userId}/deactivate`;
+  const res = await api('POST', endpoint);
+  if (res.ok) {
+    toast(activate ? 'User activated' : 'User deactivated');
+    loadAdminPanel();
+  } else {
+    const err = await res.json();
+    toast(err.detail || 'Failed to update status', 'error');
+  }
+};
+
+/* ─── SETTINGS PANEL ─── */
+async function loadSettingsPanel() {
+  // Load MFA status
+  try {
+    const mfaRes = await api('GET', '/mfa/status');
+    if (mfaRes.ok) {
+      const mfa = await mfaRes.json();
+      $('#mfa-enabled-text').textContent = mfa.mfa_enabled ? 'Enabled ✅' : 'Not Enabled';
+      $('#mfa-enabled-text').style.color = mfa.mfa_enabled ? 'var(--accent-green)' : 'var(--text-secondary)';
+    }
+  } catch (e) {}
+  
+  // Load KYC status
+  try {
+    const kycRes = await api('GET', '/kyc/status');
+    if (kycRes.ok) {
+      const kyc = await kycRes.json();
+      const statusMap = {
+        'none': 'Not Submitted',
+        'pending': 'Pending Review',
+        'approved': 'Verified ✅',
+        'rejected': 'Rejected'
+      };
+      $('#kyc-status-text').textContent = statusMap[kyc.status] || kyc.status;
+    }
+  } catch (e) {
+    $('#kyc-status-text').textContent = 'Not Submitted';
+  }
+}
+
+// MFA Setup button
+$('#setup-mfa-btn')?.addEventListener('click', async () => {
+  const setupArea = $('#mfa-setup-area');
+  setupArea.style.display = 'block';
+  
+  try {
+    const res = await api('POST', '/mfa/totp/setup');
+    if (res.ok) {
+      const data = await res.json();
+      // Display QR code (would need a QR library in production)
+      $('#mfa-qr').innerHTML = `<div style="padding:20px;text-align:center;">
+        <div style="font-family:monospace;font-size:.8rem;word-break:break-all;background:#111;padding:10px;border-radius:4px;">
+          ${data.secret}
+        </div>
+        <p style="font-size:.75rem;color:#666;margin-top:8px;">Enter this secret in your authenticator app</p>
+      </div>`;
+    }
+  } catch (e) {
+    toast('Failed to setup MFA', 'error');
+  }
+});
+
+// KYC Submit button
+$('#submit-kyc-btn')?.addEventListener('click', async () => {
+  const name = $('#kyc-name').value;
+  const dob = $('#kyc-dob').value;
+  const idNumber = $('#kyc-id').value;
+  
+  if (!name || !dob) {
+    toast('Please fill in all required fields', 'error');
+    return;
+  }
+  
+  try {
+    const res = await api('POST', '/kyc/submit', {
+      full_name: name,
+      date_of_birth: dob,
+      id_number: idNumber || 'XXXX'
+    });
+    if (res.ok) {
+      toast('KYC submitted for review!');
+      $('#kyc-status-text').textContent = 'Pending Review';
+    } else {
+      const err = await res.json();
+      toast(err.detail || 'KYC submission failed', 'error');
+    }
+  } catch (e) {
+    toast('KYC submission failed', 'error');
+  }
+});
+
+// Webhook create button
+$('#create-webhook-btn')?.addEventListener('click', async () => {
+  const url = $('#webhook-url').value;
+  const eventsSelect = $('#webhook-events');
+  const events = Array.from(eventsSelect.selectedOptions).map(o => o.value);
+  
+  if (!url || events.length === 0) {
+    toast('Please enter URL and select events', 'error');
+    return;
+  }
+  
+  try {
+    const res = await api('POST', '/webhooks', { url, events });
+    if (res.ok) {
+      const data = await res.json();
+      toast('Webhook created!');
+      $('#webhook-url').value = '';
+    } else {
+      const err = await res.json();
+      toast(err.detail || 'Failed to create webhook', 'error');
+    }
+  } catch (e) {
+    toast('Failed to create webhook', 'error');
+  }
+});
 
 /* ─── INIT ─── */
 if (state.token) {

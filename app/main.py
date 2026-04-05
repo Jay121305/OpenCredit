@@ -1,3 +1,39 @@
+"""
+OpenCredit - Production-Grade Fintech Backend
+==============================================
+
+This is the main FastAPI application entry point. It initializes:
+- Middleware (CORS, rate limiting, request logging)
+- Metrics collection (Prometheus-compatible)
+- Static file serving (dashboard UI)
+- All API route handlers
+
+API Prefix: /api/v1
+
+Route Modules:
+    - auth: User registration, login, profile
+    - merchants: Merchant management, API keys
+    - payments: Payment processing with fraud detection
+    - analytics: Spending summaries and insights
+    - records: Financial records CRUD
+    - dashboard: Dashboard summary data
+    - users: User management (admin)
+    - mfa: Multi-factor authentication
+    - kyc: Know Your Customer verification
+    - webhooks: Webhook endpoint management
+    - refunds: Refund processing
+    - disputes: Dispute management
+    - fx: Foreign exchange rates
+    - ledger: Hash-chained audit trail
+
+Run:
+    uvicorn app.main:app --reload
+    
+Docs:
+    - Swagger UI: http://localhost:8000/docs
+    - ReDoc: http://localhost:8000/redoc
+"""
+
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -12,6 +48,7 @@ from app.api.routes import (
     fx,
     health,
     kyc,
+    ledger,
     merchants,
     mfa,
     payments,
@@ -28,8 +65,10 @@ from app.db.base import Base
 from app.db.session import engine
 
 
+# Initialize logging
 configure_logging()
 
+# Create FastAPI application
 app = FastAPI(
     title=settings.app_name,
     description="Production-style digital credit and payment infrastructure platform",
@@ -81,3 +120,4 @@ app.include_router(refunds.router, prefix=settings.api_prefix)
 app.include_router(refunds.chargeback_router, prefix=settings.api_prefix)
 app.include_router(disputes.router, prefix=settings.api_prefix)
 app.include_router(fx.router, prefix=settings.api_prefix)
+app.include_router(ledger.router, prefix=settings.api_prefix)

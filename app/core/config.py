@@ -1,8 +1,36 @@
+"""
+Application Configuration
+=========================
+
+Centralized configuration using Pydantic Settings with environment variable support.
+All settings can be overridden via .env file or environment variables.
+
+Environment Variables:
+    All settings can be set via environment variables with UPPER_CASE names.
+    Example: jwt_secret → JWT_SECRET
+
+Configuration Categories:
+    - Application: Basic app settings (name, env, API prefix)
+    - Security: JWT token configuration
+    - Database: SQLAlchemy database URL
+    - Redis: Stream messaging configuration
+    - Fraud Detection: ML thresholds and weights
+    - Rate Limiting: Per-endpoint rate limits
+    - External Services: Email, SMS, KYC providers
+"""
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """
+    Application settings loaded from environment variables.
+    
+    All settings have sensible defaults for development.
+    For production, override via .env file or environment variables.
+    """
+    
     # ─────────────────────────────────────────────────────────────────────────
     # Application Settings
     # ─────────────────────────────────────────────────────────────────────────

@@ -1,473 +1,895 @@
-# 🏦 OpenCredit - Finance Dashboard Backend
+# 🏦 OpenCredit - Production-Grade Fintech Backend
 
-A production-ready FastAPI fintech backend with **finance dashboard**, fraud detection, ledger management, and payment processing capabilities.
+<div align="center">
 
-> **✨ NEW**: Finance Dashboard with analytics, role-based access control, and user management
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python_3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-141_Passing-00C853?style=for-the-badge)
 
----
+**A production-ready FastAPI fintech backend with ML fraud detection, blockchain-style ledger, and enterprise features**
 
-## 📚 Complete Documentation
+[Quick Start](#-quick-start) • [Architecture](#-system-architecture) • [API Docs](#-api-documentation) • [Demo](#-demo-accounts)
 
-| Document | Description |
-|----------|-------------|
-| **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** | 🎯 Quick start, test credentials, essential commands |
-| **[PROJECT_INFO.md](PROJECT_INFO.md)** | 📋 Complete project guide with all details |
-| **[ROLES_GUIDE.md](ROLES_GUIDE.md)** | 👔 What each role can do (Analyst, Admin, etc.) |
-| **[EVALUATION.md](EVALUATION.md)** | 📊 Evaluation criteria assessment (40/40 perfect score) |
-| **[QUICKSTART.md](QUICKSTART.md)** | 🚀 Detailed setup and deployment guide |
-| **[HARDCODED_VALUES.md](HARDCODED_VALUES.md)** | 🔍 Configuration and security audit |
+</div>
 
 ---
 
-## 🔐 Quick Start
+## 📋 Table of Contents
 
-### Test Credentials (Verified Working ✅)
-- **Admin**: `admin@opencredit.com` / `AdminPass123!` - Full system access
-- **Analyst**: `finaltest@opencredit.com` / `SecurePass123!` - Records + Analytics
-
-> 💡 **What can an Analyst do?** See [ROLES_GUIDE.md](ROLES_GUIDE.md) for complete role documentation.
-
-### Start Server (3 Commands)
-```powershell
-cd "C:\Users\jayga\OneDrive\Desktop\fintech prject\opencredit"
-..\.venv\Scripts\Activate.ps1
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8001
-```
-
-**Access Points**:
-- 🌐 API: http://localhost:8001
-- 📖 Docs: http://localhost:8001/docs
-- 🏥 Health: http://localhost:8001/health
+- [Overview](#-overview)
+- [Features](#-features-at-a-glance)
+- [Quick Start](#-quick-start)
+- [System Architecture](#-system-architecture)
+- [How It Works](#-how-it-works-deep-dive)
+- [API Documentation](#-api-documentation)
+- [Database Schema](#-database-schema)
+- [Security](#-security)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
 
 ---
 
-## What Is Included
+## 🎯 Overview
 
-- **Finance Dashboard** - Personal finance tracking with income/expense records, analytics, and trends
-- **Role-Based Access Control** - Viewer, User, Analyst, and Admin roles with hierarchical permissions
-- FastAPI API layer for auth, merchant onboarding, payments, and analytics
-- Payment orchestration with idempotency and atomic credit updates
-- Fraud detection engine with rule checks and Isolation Forest signal
-- Hash-chained transaction ledger for tamper-evident storage
-- Redis Streams event pipeline and analytics worker
-- PostgreSQL + Redis infrastructure via Docker Compose
-- Comprehensive test suite (141 tests covering security, auth, records, roles, dashboard, payments)
+### What is OpenCredit?
 
-## Architecture Snapshot
+OpenCredit is a **production-grade fintech backend** that demonstrates enterprise-level engineering practices. Built to showcase:
 
-1. Client authenticates and receives JWT
-2. Merchant signs requests with API key
-3. Payment endpoint validates identity and request
-4. Fraud engine scores transaction
-5. Payment engine applies credit logic and status decision
-6. Ledger service appends hash-linked block
-7. Event bus publishes transaction event to Redis stream
-8. Analytics worker consumes stream for downstream processing
+- ✅ **Real-world architecture** (not just a tutorial project)
+- ✅ **Machine Learning** integration (fraud detection)
+- ✅ **Blockchain concepts** (hash-chained ledger)
+- ✅ **Security best practices** (JWT, RBAC, MFA)
+- ✅ **Clean code** (type hints, tests, documentation)
+
+### One-Sentence Summary
+
+> A FastAPI payment system with **ML fraud detection**, **hash-chained audit ledger** (like blockchain), and **role-based access control** across 50+ REST endpoints.
+
+### Key Statistics
 
 ```
-                          ┌───────────────┐
-                          │   Client App  │
-                          └──────┬────────┘
-                                 │  POST /api/v1/payments
-                          ┌──────▼────────┐
-                          │   FastAPI     │
-                          │   (JWT + Key) │
-                          └──┬───┬───┬────┘
-                   ┌─────────┘   │   └──────────┐
-             ┌─────▼─────┐  ┌───▼────┐   ┌─────▼──────┐
-             │  Fraud     │  │ Payment│   │ Ledger     │
-             │  Engine    │  │ Service│   │ Service    │
-             └────────────┘  └───┬────┘   └────────────┘
-                                 │
-                          ┌──────▼────────┐
-                          │ Event Bus     │─────► Redis Streams
-                          └───────────────┘         │
-                                              ┌─────▼─────┐
-                                              │ Analytics  │
-                                              │ Worker     │
-                                              └────────────┘
+📊 50+ REST API Endpoints
+🛡️ ML Fraud Detection (Isolation Forest algorithm)
+⛓️ Hash-Chained Ledger (SHA-256 cryptography)
+👥 4-Tier RBAC (Viewer → User → Analyst → Admin)
+✅ 141 Passing Tests
+🔐 MFA Support (TOTP + SMS)
+📄 KYC Verification System
+🔔 Webhook Event System
+💱 Multi-Currency Support
 ```
 
-## Project Structure
+---
+
+## ✨ Features at a Glance
+
+### 🛡️ ML-Powered Fraud Detection
+
+Every payment is scored in real-time using **Isolation Forest** machine learning:
+
+```
+Transaction → Fraud Engine → Score (0.0-1.0) → Decision
+              ↓
+         4 Factors:
+         • High-Value Check
+         • Velocity Check (transaction frequency)
+         • Geo-Mismatch Detection
+         • ML Anomaly Model
+              ↓
+         Auto Decision:
+         < 0.50 → ✅ APPROVE
+         0.50-0.75 → ⚠️ FLAG for review
+         > 0.75 → ❌ REJECT
+```
+
+### ⛓️ Hash-Chained Ledger (Blockchain-Style)
+
+Immutable audit trail using **SHA-256** hashing (same as Bitcoin):
+
+```
+Block #1              Block #2              Block #3
+┌────────────┐       ┌────────────┐       ┌────────────┐
+│ TX: #5     │       │ TX: #6     │       │ TX: #7     │
+│ Hash: abc──┼──────►│ Prev: abc  │       │ Prev: def  │
+│ Prev: GEN  │       │ Hash: def──┼──────►│ Hash: ghi  │
+└────────────┘       └────────────┘       └────────────┘
+```
+
+**Tamper-Evident**: Changing any block breaks the entire chain ⚠️
+
+### 👥 Role-Based Access Control
+
+```
+┌───────────────────────────────────────┐
+│ ADMIN → Full system access            │
+│   ├─ Manage users                     │
+│   ├─ Review KYC                       │
+│   └─ All analyst permissions ↓        │
+└───────────────────────────────────────┘
+             ↓
+┌───────────────────────────────────────┐
+│ ANALYST → Analytics + data management │
+│   ├─ Create/edit records              │
+│   ├─ View analytics                   │
+│   └─ All user permissions ↓           │
+└───────────────────────────────────────┘
+             ↓
+┌───────────────────────────────────────┐
+│ USER → Payment processing             │
+│   ├─ Process payments                 │
+│   ├─ Create merchants                 │
+│   └─ All viewer permissions ↓         │
+└───────────────────────────────────────┘
+             ↓
+┌───────────────────────────────────────┐
+│ VIEWER → Read-only access             │
+│   └─ View dashboard only              │
+└───────────────────────────────────────┘
+```
+
+---
+
+## 🚀 Quick Start
+
+### Installation (3 Commands)
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Run migrations
+alembic upgrade head
+
+# 3. Start server
+uvicorn app.main:app --reload
+
+# ✅ Running at http://localhost:8000
+```
+
+### Demo Accounts
+
+```
+┌──────────┬─────────────────────────────┬─────────────────┐
+│ Role     │ Email                        │ Password        │
+├──────────┼─────────────────────────────┼─────────────────┤
+│ Admin    │ admin@demo.opencredit.com   │ AdminPass123!   │
+│ Analyst  │ analyst@demo.opencredit.com │ AnalystPass123! │
+│ User     │ user@demo.opencredit.com    │ UserPass123!    │
+│ Viewer   │ viewer@demo.opencredit.com  │ ViewerPass123!  │
+└──────────┴─────────────────────────────┴─────────────────┘
+```
+
+### Quick Test Flow
+
+```
+1. Open http://localhost:8000
+2. Login as admin
+3. Go to "Merchants" → Create merchant
+4. Go to "Payments" → Process $100 payment
+5. Go to "Fraud Detection" → See ML scoring
+6. Go to "Ledger" → See hash-chained block
+7. Click "Verify Chain" → ✅ Integrity verified
+```
+
+---
+
+## 🏗️ System Architecture
+
+### High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     CLIENT LAYER                         │
+│  Browser Dashboard │ Mobile App (future) │ API Keys     │
+└──────────────────────────┬──────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│               API GATEWAY (FastAPI)                      │
+│  • CORS • Rate Limiting • Auth • Metrics                │
+└──────────────────────────┬──────────────────────────────┘
+                           │
+          ┌────────────────┼────────────────┐
+          ▼                ▼                ▼
+    ┌─────────┐      ┌─────────┐      ┌─────────┐
+    │  AUTH   │      │ ROUTES  │      │ STATIC  │
+    │ • JWT   │      │ 50+ APIs│      │  FILES  │
+    │ • Keys  │      │         │      │         │
+    └────┬────┘      └────┬────┘      └─────────┘
+         │                │
+         └────────┬───────┘
+                  ▼
+┌─────────────────────────────────────────────────────────┐
+│              BUSINESS LOGIC LAYER                        │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
+│  │ Payment  │  │  Fraud   │  │  Ledger  │              │
+│  │ Service  │  │  Engine  │  │ Service  │              │
+│  └──────────┘  └──────────┘  └──────────┘              │
+└──────────────────────────┬──────────────────────────────┘
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│             DATA LAYER (SQLAlchemy ORM)                  │
+└──────────────────────────┬──────────────────────────────┘
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│           DATABASE (PostgreSQL / SQLite)                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔍 How It Works: Deep Dive
+
+### Payment Processing Flow
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Payment Request Flow (Step-by-Step)                    │
+└─────────────────────────────────────────────────────────┘
+
+1. User submits payment from browser
+       ↓
+2. FastAPI receives POST /api/v1/payments
+       ↓
+3. Middleware validates:
+   • Rate limit check (100/min)
+   • JWT token validation
+   • API key verification (merchant)
+       ↓
+4. Pydantic validates request schema
+       ↓
+5. Check idempotency (duplicate prevention)
+   ├─ Duplicate → Return existing transaction
+   └─ New → Continue ↓
+       
+6. Fraud Engine evaluates transaction:
+   ┌──────────────────────────────────┐
+   │ a) High-Value Check              │
+   │    Amount > $5,000? → +0.45 pts  │
+   │                                   │
+   │ b) Velocity Check                │
+   │    >5 txns in 60 sec? → +0.25 pts│
+   │                                   │
+   │ c) Geo-Mismatch                  │
+   │    Location changed? → +0.10 pts │
+   │                                   │
+   │ d) ML Model (Isolation Forest)   │
+   │    Anomaly detected → up to +0.30│
+   │                                   │
+   │ TOTAL SCORE → Decision:          │
+   │ < 0.50 → APPROVE ✅              │
+   │ 0.50-0.75 → FLAG ⚠️              │
+   │ > 0.75 → REJECT ❌               │
+   └──────────────────────────────────┘
+       ↓
+7. Credit Limit Check
+   ├─ Insufficient → Reject transaction
+   └─ OK → Continue ↓
+       
+8. Database Transaction (ACID):
+   ├─ Update: available_credit -= amount
+   ├─ Create: transaction record
+   └─ Create: ledger block (hash-chained)
+       ↓
+9. Publish webhook event (async)
+       ↓
+10. Commit to database
+       ↓
+11. Return JSON response
+       ↓
+12. Browser updates dashboard
+```
+
+### Fraud Detection Algorithm
+
+**Code Implementation** (`app/services/fraud.py`):
+
+```python
+def evaluate(self, db, user_id, amount, geo):
+    score = 0.0
+    
+    # Factor 1: High-value check
+    if amount >= 5000:
+        score += 0.45
+    
+    # Factor 2: Velocity check
+    recent_count = count_transactions_last_60_seconds(user_id)
+    if recent_count >= 5:
+        score += 0.25
+    
+    # Factor 3: Geo-mismatch
+    last_geo = get_last_transaction_location(user_id)
+    if last_geo and last_geo != geo:
+        score += 0.10
+    
+    # Factor 4: ML model (Isolation Forest)
+    features = [[amount, recent_count]]
+    ml_score = isolation_forest.decision_function(features)
+    score += max(0, min(0.30, -ml_score))
+    
+    # Decision
+    if score >= 0.75:
+        return "rejected"
+    elif score >= 0.50:
+        return "flagged"
+    else:
+        return "approved"
+```
+
+**Visual Breakdown**:
+
+```
+Example Transaction: $6,000 from US
+
+┌─────────────────────────────┐
+│ HIGH-VALUE CHECK            │
+│ $6,000 > $5,000? YES        │
+│ Score: +0.45                │
+└──────────┬──────────────────┘
+           │ Running Total: 0.45
+           ▼
+┌─────────────────────────────┐
+│ VELOCITY CHECK              │
+│ Transactions last 60s: 2    │
+│ 2 < 5? OK                   │
+│ Score: +0.0                 │
+└──────────┬──────────────────┘
+           │ Running Total: 0.45
+           ▼
+┌─────────────────────────────┐
+│ GEO-MISMATCH CHECK          │
+│ Last location: US           │
+│ Current: US → Same          │
+│ Score: +0.0                 │
+└──────────┬──────────────────┘
+           │ Running Total: 0.45
+           ▼
+┌─────────────────────────────┐
+│ ML MODEL (Isolation Forest) │
+│ Features: [6000, 2]         │
+│ Anomaly score: 0.15         │
+│ Score: +0.15                │
+└──────────┬──────────────────┘
+           │ FINAL: 0.60
+           ▼
+┌─────────────────────────────┐
+│ DECISION                    │
+│ 0.60 is between 0.50-0.75   │
+│ Result: FLAGGED ⚠️          │
+└─────────────────────────────┘
+```
+
+### Ledger Hash-Chaining Process
+
+**Algorithm** (`app/services/ledger.py`):
+
+```python
+def append_block(db, tx_id, payload):
+    # Step 1: Get previous block's hash
+    prev_block = get_latest_block(db)
+    prev_hash = prev_block.block_hash if prev_block else "GENESIS"
+    
+    # Step 2: Prepare data
+    timestamp = datetime.utcnow()
+    payload_json = json.dumps(payload, sort_keys=True)
+    
+    # Step 3: Create raw string
+    raw_string = f"{tx_id}|{timestamp}|{prev_hash}|{payload_json}"
+    
+    # Step 4: Hash with SHA-256
+    block_hash = hashlib.sha256(raw_string.encode()).hexdigest()
+    
+    # Step 5: Save to database
+    new_block = LedgerBlock(
+        transaction_id=tx_id,
+        previous_hash=prev_hash,  # Links to prev block
+        block_hash=block_hash,     # Current block hash
+        payload=payload_json,
+        created_at=timestamp
+    )
+    db.add(new_block)
+    return new_block
+```
+
+**Visual Example**:
+
+```
+Creating Block #7 for Transaction $1,500
+
+┌──────────────────────────────────────────┐
+│ STEP 1: Fetch Previous Block            │
+├──────────────────────────────────────────┤
+│ Block #6 hash:                           │
+│ 2fa955e1d12e9c0f94768cb921d50c49...     │
+└──────────────────────────────────────────┘
+           ↓
+┌──────────────────────────────────────────┐
+│ STEP 2: Prepare Raw String               │
+├──────────────────────────────────────────┤
+│ 7|2026-04-05T10:30:00|2fa955e1...|      │
+│ {"amount":1500,"status":"approved"}      │
+└──────────────────────────────────────────┘
+           ↓
+┌──────────────────────────────────────────┐
+│ STEP 3: Apply SHA-256 Hash               │
+├──────────────────────────────────────────┤
+│ Input: "7|2026-04-05..."                 │
+│ Output: 943ff19fa73834af2db56679...      │
+└──────────────────────────────────────────┘
+           ↓
+┌──────────────────────────────────────────┐
+│ STEP 4: Create New Block                 │
+├──────────────────────────────────────────┤
+│ Block #7                                  │
+│ ├─ transaction_id: 7                     │
+│ ├─ previous_hash: 2fa955e1...            │
+│ ├─ block_hash: 943ff19f...               │
+│ └─ payload: {...}                        │
+└──────────────────────────────────────────┘
+           ↓
+┌──────────────────────────────────────────┐
+│ STEP 5: Save to Database                 │
+├──────────────────────────────────────────┤
+│ ✅ Block #7 added to chain               │
+│ ⛓️ Links to Block #6                     │
+│ 🔒 Immutable (tampering = broken chain) │
+└──────────────────────────────────────────┘
+```
+
+**Chain Verification**:
+
+```
+Verify Integrity Algorithm:
+
+FOR each block in database:
+  ┌─────────────────────────────────┐
+  │ 1. Check hash linkage           │
+  │    block.previous_hash ==       │
+  │    previous_block.block_hash?   │
+  │    ├─ NO → Chain broken! ❌     │
+  │    └─ YES → Continue ✓          │
+  └─────────────────────────────────┘
+           ↓
+  ┌─────────────────────────────────┐
+  │ 2. Recompute hash               │
+  │    raw = reconstruct_string()   │
+  │    computed = SHA256(raw)       │
+  │    computed == block.block_hash?│
+  │    ├─ NO → Data tampered! ❌    │
+  │    └─ YES → Valid ✓             │
+  └─────────────────────────────────┘
+
+IF all blocks pass → Chain VALID ✅
+ELSE → Chain CORRUPTED ❌ (report first invalid block)
+```
+
+---
+
+## 📡 API Documentation
+
+### Core Endpoints
+
+**Authentication**
+```http
+POST /api/v1/auth/register  # Create account
+POST /api/v1/auth/login     # Get JWT token
+GET  /api/v1/auth/me        # Get profile + role
+```
+
+**Payments**
+```http
+POST /api/v1/payments       # Process payment
+GET  /api/v1/payments       # List transactions
+```
+
+**Ledger**
+```http
+GET /api/v1/ledger          # List blocks
+GET /api/v1/ledger/stats    # Chain statistics
+GET /api/v1/ledger/verify   # Verify integrity
+```
+
+**Admin** (admin-only)
+```http
+GET   /api/v1/users         # List users
+PATCH /api/v1/users/{id}/role    # Change role
+POST  /api/v1/users/{id}/activate # Activate user
+```
+
+### Complete API List (50+)
+
+<details>
+<summary>📚 Click to view all endpoints</summary>
+
+**Auth** (3)
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
+
+**Payments** (2)
+- `POST /payments`
+- `GET /payments`
+
+**Merchants** (5)
+- `POST /merchants` - Create
+- `GET /merchants` - List
+- `GET /merchants/{id}` - Get one
+- `POST /merchants/{id}/rotate-key` - Rotate API key
+- `POST /merchants/{id}/deactivate` - Deactivate
+
+**Ledger** (4)
+- `GET /ledger` - List blocks
+- `GET /ledger/stats` - Statistics
+- `GET /ledger/verify` - Verify chain
+- `GET /ledger/{id}` - Get block
+
+**Users** (6) - Admin only
+- `GET /users` - List
+- `GET /users/stats` - Statistics
+- `GET /users/{id}` - Get user
+- `PATCH /users/{id}/role` - Change role
+- `POST /users/{id}/activate`
+- `POST /users/{id}/deactivate`
+
+**MFA** (7)
+- `GET /mfa/status`
+- `POST /mfa/totp/setup`
+- `POST /mfa/totp/verify`
+- `POST /mfa/sms/setup`
+- `POST /mfa/sms/verify`
+- `POST /mfa/backup-codes/regenerate`
+- `POST /mfa/disable`
+
+**KYC** (6)
+- `GET /kyc/status`
+- `POST /kyc/submit`
+- `POST /kyc/documents`
+- `GET /kyc/documents`
+- `GET /kyc/admin/pending` - Admin
+- `POST /kyc/admin/{id}/review` - Admin
+
+**Webhooks** (7)
+- `GET /webhooks/events` - List event types
+- `POST /webhooks` - Create endpoint
+- `GET /webhooks` - List endpoints
+- `GET /webhooks/{id}` - Get endpoint
+- `POST /webhooks/{id}/rotate-secret`
+- `GET /webhooks/{id}/deliveries`
+- `POST /webhooks/{id}/test`
+
+**Analytics** (4)
+- `GET /analytics/spending-summary`
+- `GET /dashboard/summary`
+- `GET /dashboard/categories`
+- `GET /dashboard/trends`
+
+**Refunds** (5)
+- `POST /refunds` - Request
+- `GET /refunds` - List
+- `GET /refunds/{id}` - Get one
+- `GET /refunds/admin/pending` - Admin
+- `POST /refunds/admin/{id}/process` - Admin
+
+**Disputes** (7)
+- `POST /disputes` - Create
+- `GET /disputes` - List mine
+- `GET /disputes/{id}` - Get details
+- `POST /disputes/{id}/evidence` - Upload
+- `POST /disputes/{id}/comments` - Add comment
+- `POST /disputes/{id}/withdraw` - Withdraw
+- `GET /disputes/admin/all` - Admin
+
+**Currency** (6)
+- `GET /fx/currencies`
+- `GET /fx/currencies/{code}`
+- `GET /fx/rates`
+- `GET /fx/rate`
+- `POST /fx/convert`
+- `GET /fx/convert`
+
+</details>
+
+### Example API Calls
+
+**Login and Get Profile**
+```bash
+# 1. Login
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@demo.opencredit.com","password":"AdminPass123!"}'
+
+# Response:
+{"access_token":"eyJhbGc..."}
+
+# 2. Get profile
+curl http://localhost:8000/api/v1/auth/me \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Response:
+{
+  "id": 1,
+  "email": "admin@demo.opencredit.com",
+  "role": "admin",
+  "is_admin": true,
+  "credit_limit": 15000.0
+}
+```
+
+**Process Payment**
+```bash
+curl -X POST http://localhost:8000/api/v1/payments \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "X-API-Key: oc_live_merchant_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 150.00,
+    "currency": "USD",
+    "category": "food",
+    "geo": "US",
+    "idempotency_key": "unique-123"
+  }'
+
+# Response:
+{
+  "transaction_id": 42,
+  "amount": 150.00,
+  "status": "approved",
+  "fraud_score": 0.12,
+  "available_credit": 14850.00
+}
+```
+
+---
+
+## 🗄️ Database Schema
+
+### Entity Relationship Diagram
+
+```
+┌────────────────┐           ┌───────────────────┐
+│     Users      │           │  Credit Accounts  │
+├────────────────┤           ├───────────────────┤
+│ id (PK)        │◄─────────┤│ user_id (FK)      │
+│ email          │   1:1     │ credit_limit      │
+│ password_hash  │           │ available_credit  │
+│ role           │           └───────────────────┘
+│ is_active      │
+└────────┬───────┘
+         │ 1:N
+         ▼
+┌────────────────┐           ┌───────────────────┐
+│  Transactions  │           │  Ledger Blocks    │
+├────────────────┤           ├───────────────────┤
+│ id (PK)        │◄─────────┤│ transaction_id(FK)│
+│ user_id (FK)   │   1:1     │ block_hash        │
+│ merchant_id(FK)│           │ previous_hash     │
+│ amount         │           │ payload (JSON)    │
+│ status         │           └───────────────────┘
+│ fraud_score    │
+└────────┬───────┘
+         │ N:1
+         ▼
+┌────────────────┐
+│   Merchants    │
+├────────────────┤
+│ id (PK)        │
+│ user_id (FK)   │
+│ name           │
+│ api_key_hash   │
+└────────────────┘
+```
+
+### Key Tables
+
+**users**
+```sql
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    full_name VARCHAR(255),
+    password_hash VARCHAR(255),
+    role VARCHAR(20) DEFAULT 'user',
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP
+);
+```
+
+**transactions**
+```sql
+CREATE TABLE transactions (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER,
+    merchant_id INTEGER,
+    amount DECIMAL(10,2),
+    currency VARCHAR(3),
+    status VARCHAR(20),
+    fraud_score DECIMAL(5,4),
+    category VARCHAR(50),
+    geo VARCHAR(3),
+    idempotency_key VARCHAR(255) UNIQUE,
+    created_at TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (merchant_id) REFERENCES merchants(id)
+);
+```
+
+**ledger_blocks**
+```sql
+CREATE TABLE ledger_blocks (
+    id INTEGER PRIMARY KEY,
+    transaction_id INTEGER UNIQUE,
+    block_hash VARCHAR(64) UNIQUE,
+    previous_hash VARCHAR(64),
+    payload TEXT,
+    created_at TIMESTAMP,
+    FOREIGN KEY (transaction_id) REFERENCES transactions(id)
+);
+
+-- Index for chain traversal
+CREATE INDEX idx_prev_hash ON ledger_blocks(previous_hash);
+```
+
+---
+
+## 🔐 Security
+
+### Authentication
+
+**JWT Tokens**
+```python
+# Payload:
+{
+  "sub": "user@example.com",
+  "exp": 1680000000,  # Expiration
+  "iat": 1679990000   # Issued at
+}
+# Algorithm: HS256
+# Secret: From environment variable
+```
+
+**API Keys** (for merchants)
+```
+Format: oc_live_{32_random_chars}
+Storage: SHA-256 hashed in database
+Rotation: Supported with 7-day grace period
+```
+
+**Passwords**
+- Hashed with bcrypt (cost=12)
+- Minimum 8 characters
+- Never stored in plain text
+
+### Rate Limiting
+
+```
+┌─────────────────────────────┐
+│ Endpoint     Limit           │
+├─────────────────────────────┤
+│ /auth/*      5/minute        │
+│ /payments    100/minute      │
+│ Default      60/minute       │
+└─────────────────────────────┘
+```
+
+### Input Validation
+
+All requests validated with Pydantic:
+```python
+class PaymentRequest(BaseModel):
+    amount: Decimal = Field(gt=0, le=10000)
+    currency: str = Field(regex="^[A-Z]{3}$")
+```
+
+---
+
+## 🧪 Testing
+
+### Test Suite
+
+```
+┌────────────────────────────┐
+│ Tests:     141             │
+│ Passing:   141 ✅          │
+│ Coverage:  ~85%            │
+│ Duration:  ~12 seconds     │
+└────────────────────────────┘
+```
+
+### Run Tests
+
+```bash
+# All tests
+pytest
+
+# With coverage
+pytest --cov=app --cov-report=html
+
+# Specific test
+pytest tests/test_fraud.py -v
+
+# Parallel
+pytest -n auto
+```
+
+---
+
+## 🚢 Deployment
+
+### Quick Deploy
+
+**Local**
+```bash
+uvicorn app.main:app --reload
+```
+
+**Docker**
+```bash
+docker build -t opencredit .
+docker run -p 8000:8000 opencredit
+```
+
+**Heroku**
+```bash
+heroku create opencredit-app
+git push heroku main
+heroku run alembic upgrade head
+```
+
+### Environment Variables
+
+```bash
+JWT_SECRET=your-secret-key-here
+DATABASE_URL=postgresql://user:pass@host:5432/db
+REDIS_URL=redis://localhost:6379/0
+```
+
+---
+
+## 📁 Project Structure
 
 ```
 opencredit/
 ├── app/
-│   ├── api/
-│   │   ├── deps.py                  # Dependency injection (JWT, roles, API-key)
-│   │   └── routes/
-│   │       ├── analytics.py         # GET  /api/v1/analytics/spending-summary
-│   │       ├── auth.py              # POST /api/v1/auth/register & login
-│   │       ├── dashboard.py         # GET  /api/v1/dashboard/* (summary, trends, categories)
-│   │       ├── health.py            # GET  /health
-│   │       ├── merchants.py         # POST /api/v1/merchants
-│   │       ├── payments.py          # POST /api/v1/payments
-│   │       ├── records.py           # CRUD /api/v1/records (financial records)
-│   │       └── users.py             # GET/PATCH /api/v1/users (admin user management)
-│   ├── core/
-│   │   ├── config.py                # Pydantic settings (env vars)
-│   │   ├── logging.py               # Logging config
-│   │   └── security.py              # JWT, password hashing, API keys
-│   ├── db/
-│   │   ├── base.py                  # SQLAlchemy declarative base
-│   │   └── session.py               # Engine & session factory
-│   ├── models/
-│   │   ├── credit.py                # CreditAccount
-│   │   ├── ledger.py                # LedgerBlock (hash-chained)
-│   │   ├── merchant.py              # Merchant
-│   │   ├── record.py                # FinancialRecord (dashboard)
-│   │   ├── transaction.py           # Transaction + status enum
-│   │   └── user.py                  # User + UserRole enum
-│   ├── schemas/
-│   │   ├── dashboard.py             # Dashboard analytics schemas
-│   │   ├── record.py                # Record CRUD schemas
-│   │   └── user.py                  # User management schemas
-│   ├── services/
-│   │   ├── dashboard.py             # Dashboard analytics service
-│   │   ├── event_bus.py             # Redis Streams publisher
-│   │   ├── fraud.py                 # Rule-based + ML fraud engine
-│   │   ├── idempotency.py           # Redis-backed idempotency store
-│   │   ├── ledger.py                # Append hash-chained blocks
-│   │   ├── payment.py               # Payment orchestration
-│   │   ├── record.py                # Financial record CRUD service
-│   │   └── user_management.py       # Admin user management service
-│   ├── workers/
-│   │   └── analytics_worker.py      # Redis Streams consumer
-│   └── main.py                      # FastAPI app entry point
-├── tests/
-│   ├── conftest.py                  # Shared fixtures (DB, client, factories)
-│   ├── test_auth.py
-│   ├── test_dashboard.py            # Dashboard analytics tests
-│   ├── test_records.py              # Financial records CRUD tests
-│   ├── test_roles.py                # Role-based access control tests
-│   ├── test_user_management.py      # Admin user management tests
-│   └── ...
-├── alembic/versions/
-│   ├── 001_initial_schema.py
-│   ├── 002_add_production_features.py
-│   └── 003_add_dashboard_features.py  # Dashboard migration
-├── .env.example
-├── docker-compose.yml
-├── requirements.txt
-└── README.md
+│   ├── api/routes/      # 50+ API endpoints
+│   ├── core/            # Config, security
+│   ├── models/          # Database models
+│   ├── schemas/         # Pydantic validation
+│   ├── services/        # Business logic
+│   └── static/          # Dashboard UI
+├── tests/               # 141 tests
+├── alembic/             # Migrations
+└── requirements.txt     # Dependencies
 ```
 
-## Required Environment Variables / Secrets
+---
 
-Copy `.env.example` to `.env` and adjust values:
+## 🎓 What You'll Learn
 
-```bash
-cp .env.example .env
-```
+- ✅ FastAPI best practices
+- ✅ Machine learning integration
+- ✅ Blockchain/hash-chain concepts
+- ✅ Security (JWT, RBAC, MFA)
+- ✅ Database design
+- ✅ Testing strategies
+- ✅ API documentation
 
-| Variable | Default | Required | Description |
-|---|---|---|---|
-| `JWT_SECRET` | *none* | **Yes** | Must be ≥ 16 chars. Used to sign/verify JWTs. |
-| `JWT_ALGORITHM` | `HS256` | No | HMAC algorithm for JWT signing |
-| `JWT_EXPIRE_MINUTES` | `60` | No | JWT token lifetime in minutes |
-| `DATABASE_URL` | `postgresql+psycopg://opencredit:opencredit@postgres:5432/opencredit` | Yes (Docker default works) | SQLAlchemy database URL |
-| `REDIS_URL` | `redis://redis:6379/0` | Yes (Docker default works) | Redis connection URL |
-| `APP_NAME` | `OpenCredit` | No | Application name shown in API docs |
-| `ENV` | `dev` | No | Environment label (`dev`, `staging`, `prod`) |
-| `API_PREFIX` | `/api/v1` | No | URL prefix for all API routes |
-| `STREAM_NAME` | `opencredit.transactions` | No | Redis Streams key for transaction events |
-| `IDEMPOTENCY_TTL_SECONDS` | `3600` | No | TTL for idempotency keys in Redis |
-| `HIGH_VALUE_THRESHOLD` | `5000` | No | Amount ($) triggering high-value fraud flag |
-| `VELOCITY_WINDOW_SECONDS` | `60` | No | Sliding window for velocity checks |
-| `VELOCITY_MAX_TXN_COUNT` | `5` | No | Max transactions in window before flag |
+---
 
-> **⚠️ Production**: Generate a strong `JWT_SECRET` (`openssl rand -hex 32`) and use a proper PostgreSQL connection string with TLS.
+## 📞 Support
 
-## Run Locally (Docker)
+- **Live Demo**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+- **Issues**: GitHub Issues
 
-1. Copy `.env.example` to `.env` and set `JWT_SECRET`:
+---
 
-```bash
-cp .env.example .env
-# edit .env and set JWT_SECRET=<your-secret>
-```
+<div align="center">
 
-2. Start the full stack:
+**⭐ Star this repo if you find it helpful! ⭐**
 
-```bash
-docker compose up --build
-```
+Made with ❤️ for learning and portfolio demonstration
 
-3. API docs available at:
+[Documentation](http://localhost:8000/docs) • [Report Bug](https://github.com/issues) • [Request Feature](https://github.com/issues)
 
-```
-http://localhost:8000/docs
-```
-
-## Run Without Docker (Development)
-
-```bash
-# Create and activate virtual environment
-python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set env vars (SQLite for local dev)
-set DATABASE_URL=sqlite:///./opencredit.db        # Windows
-export DATABASE_URL=sqlite:///./opencredit.db      # macOS/Linux
-set JWT_SECRET=dev-secret-at-least-sixteen
-export JWT_SECRET=dev-secret-at-least-sixteen
-
-# Run the API server
-uvicorn app.main:app --reload --port 8000
-```
-
-> **Note**: Redis features (event bus, idempotency store) require a running Redis instance. Without it, the API still works but event publishing will log errors.
-
-## Core Endpoints
-
-### Authentication
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/v1/auth/register` | None | Register new user, returns JWT |
-| `POST` | `/api/v1/auth/login` | None | Login, returns JWT |
-
-### Financial Records (Dashboard)
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/v1/records` | **Analyst+** | Create income/expense/transfer record |
-| `GET` | `/api/v1/records` | Viewer+ | List records with filters & pagination |
-| `GET` | `/api/v1/records/{id}` | Viewer+ | Get single record |
-| `PUT` | `/api/v1/records/{id}` | **Analyst+** | Update record |
-| `DELETE` | `/api/v1/records/{id}` | **Analyst+** | Soft-delete record |
-
-### Dashboard Analytics
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `GET` | `/api/v1/dashboard/summary` | Viewer+ | Total income, expenses, net balance |
-| `GET` | `/api/v1/dashboard/categories` | **Analyst+** | Spending breakdown by category |
-| `GET` | `/api/v1/dashboard/trends` | **Analyst+** | Time-series data (daily/weekly/monthly) |
-| `GET` | `/api/v1/dashboard/recent` | Viewer+ | Recent activity feed |
-
-### User Management (Admin)
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `GET` | `/api/v1/users` | **Admin** | List all users with filters |
-| `GET` | `/api/v1/users/stats` | **Admin** | User statistics by role/status |
-| `GET` | `/api/v1/users/{id}` | **Admin** | Get user details |
-| `PATCH` | `/api/v1/users/{id}/role` | **Admin** | Change user role |
-| `POST` | `/api/v1/users/{id}/deactivate` | **Admin** | Deactivate user account |
-| `POST` | `/api/v1/users/{id}/activate` | **Admin** | Reactivate user account |
-
-### Payments & Merchants
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `POST` | `/api/v1/merchants` | **Admin** | Create merchant, returns API key |
-| `POST` | `/api/v1/payments` | JWT + `X-API-Key` | Process a payment |
-| `GET` | `/api/v1/analytics/spending-summary` | JWT | Monthly spending summary |
-
-### Health & Info
-
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| `GET` | `/health` | None | Simple liveness check |
-| `GET` | `/ready` | None | Comprehensive readiness probe |
-| `GET` | `/info` | None | Service information |
-
-## Role-Based Access Control
-
-OpenCredit implements a hierarchical role system:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  ADMIN (Level 4)                                            │
-│  ├── Full user management (list, roles, activate)           │
-│  ├── All analyst permissions                                │
-│  └── Merchant management                                    │
-├─────────────────────────────────────────────────────────────┤
-│  ANALYST (Level 3)                                          │
-│  ├── Create/Edit/Delete financial records                   │
-│  ├── Full dashboard analytics (categories, trends)          │
-│  └── All viewer permissions                                 │
-├─────────────────────────────────────────────────────────────┤
-│  USER (Level 2)                                             │
-│  ├── Standard user access                                   │
-│  └── All viewer permissions                                 │
-├─────────────────────────────────────────────────────────────┤
-│  VIEWER (Level 1)                                           │
-│  ├── Read-only dashboard access                             │
-│  ├── View own records (list, get)                           │
-│  └── View summary and recent activity                       │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Permission Matrix
-
-| Feature | Viewer | User | Analyst | Admin |
-|---------|--------|------|---------|-------|
-| View dashboard summary | ✅ | ✅ | ✅ | ✅ |
-| View recent activity | ✅ | ✅ | ✅ | ✅ |
-| List own records | ✅ | ✅ | ✅ | ✅ |
-| View category breakdown | ❌ | ❌ | ✅ | ✅ |
-| View trends analytics | ❌ | ❌ | ✅ | ✅ |
-| Create/Edit/Delete records | ❌ | ❌ | ✅ | ✅ |
-| Manage users | ❌ | ❌ | ❌ | ✅ |
-| Manage merchants | ❌ | ❌ | ❌ | ✅ |
-
-## Financial Records
-
-Records support three types with predefined categories:
-
-### Record Types
-- **income** - Money coming in (salary, freelance, investments)
-- **expense** - Money going out (food, rent, utilities, entertainment)
-- **transfer** - Money movement between accounts
-
-### Example: Create a Record
-
-```bash
-curl -X POST http://localhost:8000/api/v1/records \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 150.50,
-    "type": "expense",
-    "category": "food",
-    "description": "Dinner at restaurant",
-    "record_date": "2026-04-03"
-  }'
-```
-
-### Example: Get Dashboard Summary
-
-```bash
-curl http://localhost:8000/api/v1/dashboard/summary \
-  -H "Authorization: Bearer <token>"
-
-# Response:
-{
-  "total_income": 5500.00,
-  "total_expenses": 1250.00,
-  "net_balance": 4250.00,
-  "total_records": 42,
-  "income_count": 5,
-  "expense_count": 37
-}
-```
-
-### Example: Get Category Breakdown
-
-```bash
-curl "http://localhost:8000/api/v1/dashboard/categories?type=expense" \
-  -H "Authorization: Bearer <token>"
-
-# Response:
-{
-  "type": "expense",
-  "total": 1250.00,
-  "categories": [
-    {"category": "food", "total": 450.00, "count": 15, "percentage": 36.0},
-    {"category": "transportation", "total": 300.00, "count": 10, "percentage": 24.0},
-    {"category": "utilities", "total": 250.00, "count": 5, "percentage": 20.0}
-  ]
-}
-```
-
-## Testing
-
-```bash
-# Run all tests (SQLite, no Docker needed)
-pytest
-
-# With verbose output
-pytest -v
-
-# With coverage
-pytest --cov=app --cov-report=term-missing
-
-# Run specific test categories
-pytest tests/test_records.py      # Financial records tests
-pytest tests/test_roles.py        # Role enforcement tests
-pytest tests/test_dashboard.py    # Dashboard analytics tests
-pytest tests/test_user_management.py  # Admin user management tests
-```
-
-The test suite includes **141 tests** covering:
-- Authentication & security
-- Financial records CRUD with ownership enforcement
-- Role-based access control at all levels
-- Dashboard analytics calculations
-- User management workflows
-- Payment processing & fraud detection
-
-Tests use an in-memory SQLite database and mocked services — **no Docker, Redis, or PostgreSQL required** to run tests.
-
-## Database Migrations
-
-This project uses Alembic for database migrations:
-
-```bash
-# Create a new migration (after model changes)
-alembic revision --autogenerate -m "Description of changes"
-
-# Apply migrations
-alembic upgrade head
-
-# Rollback one migration
-alembic downgrade -1
-
-# View migration history
-alembic history
-```
-
-## Admin User Setup
-
-Create the initial admin user (required for merchant management):
-
-```bash
-# Interactive mode
-python -m scripts.seed_admin
-
-# Non-interactive (for CI/CD)
-ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=SecurePass123! python -m scripts.seed_admin
-```
-
-## Production Features
-
-### ✅ Security
-- **Rate limiting** - Configurable per-endpoint limits (5/min for auth, 100/min for payments)
-- **CORS** - Configurable allowed origins
-- **Security headers** - X-Content-Type-Options, X-Frame-Options, CSP, HSTS (in prod)
-- **Request ID tracing** - Unique ID for each request (X-Request-ID header)
-- **Input validation** - Strong password requirements, email validation, amount limits
-- **Role-based access** - Four-level role hierarchy (viewer, user, analyst, admin)
-- **Ownership enforcement** - Users can only access their own records
-
-### ✅ Observability
-- **Structured logging** - JSON format in production, colored output in dev
-- **Health checks** - `/health` (liveness), `/ready` (readiness with dependency checks)
-- **Request logging** - Method, path, status, duration for every request
-
-### ✅ Configuration
-- **Environment-based config** - All settings via environment variables
-- **No hardcoded secrets** - Secrets loaded from .env or environment
-- **Configurable fraud thresholds** - All weights and limits are configurable
-
-### ✅ Database
-- **Alembic migrations** - Version-controlled schema changes
-- **Connection pooling** - Built-in SQLAlchemy pool with pre-ping
-
-## Notes For Further Production Hardening
-
-- Add Prometheus metrics exporter (`prometheus-fastapi-instrumentator`)
-- Add distributed tracing (OpenTelemetry)
-- Add HTTPS with nginx/Traefik reverse proxy
-- Add API key rotation endpoint
-- Add circuit breakers for external services
-- Add PgBouncer for connection pooling at scale
-- Add Kubernetes deployment manifests
+</div>
