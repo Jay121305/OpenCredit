@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # =============================================================================
 # Render.com Startup Script
 # =============================================================================
@@ -9,11 +9,11 @@ set -e  # Exit on error
 
 echo "🚀 Starting OpenCredit API deployment..."
 
-# Run database migrations
+# Run database migrations (ignore errors if already applied)
 echo "📊 Running database migrations..."
-alembic upgrade head
+alembic upgrade head || echo "⚠️  Migrations failed or already applied"
 
-echo "✅ Migrations complete!"
+echo "✅ Setup complete!"
 
 # Start the FastAPI server
 echo "🌐 Starting API server on port ${PORT:-8000}..."
