@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./opencredit.db"
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Redis
+    # Redis (Optional - app will work without it)
     # ─────────────────────────────────────────────────────────────────────────
     redis_url: str = "redis://localhost:6379/0"
     stream_name: str = "opencredit.transactions"

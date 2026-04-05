@@ -13,7 +13,7 @@ services:
     name: opencredit-api
     runtime: docker
     plan: free  # Free tier: 750 hours/month, sleeps after 15min inactivity
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./Dockerfile.render
     dockerContext: .
     
     # Health check endpoint
@@ -30,11 +30,10 @@ services:
       - key: API_PREFIX
         value: /api/v1
       
-      # Database URL (automatically set by Render when you add PostgreSQL)
+      # Database URL - Set this in Render Dashboard with your Neon.tech connection string
+      # Format: postgresql://user:password@ep-xxx-xxx.neon.tech/dbname?sslmode=require
       - key: DATABASE_URL
-        fromDatabase:
-          name: opencredit-db
-          property: connectionString
+        sync: false  # MUST be set manually in Render dashboard
       
       # JWT Secret (set in Render dashboard as secret)
       - key: JWT_SECRET
@@ -46,9 +45,9 @@ services:
       - key: JWT_EXPIRE_MINUTES
         value: 60
       
-      # Redis URL (set after creating Redis instance)
+      # Redis URL (OPTIONAL - app works without it)
       - key: REDIS_URL
-        sync: false  # Manually set in dashboard
+        value: redis://localhost:6379/0
       
       # Fraud detection settings
       - key: DEFAULT_CREDIT_LIMIT
@@ -98,14 +97,8 @@ services:
       - key: CORS_ORIGINS
         value: https://opencredit-api.onrender.com
 
-  # ─────────────────────────────────────────────────────────────────────────────
-  # PostgreSQL Database (Free Tier)
-  # ─────────────────────────────────────────────────────────────────────────────
-  # NOTE: Render's free PostgreSQL expires after 90 days
-  # For permanent free DB, use https://neon.tech or keep SQLite
+# ─────────────────────────────────────────────────────────────────────────────
+# NOTE: No database block needed when using external providers like Neon.tech
+# Set DATABASE_URL manually in Render dashboard Environment tab
+# ─────────────────────────────────────────────────────────────────────────────
 
-databases:
-  - name: opencredit-db
-    plan: free  # Free tier: 90 days, then expires (1GB storage)
-    databaseName: opencredit
-    user: opencredit

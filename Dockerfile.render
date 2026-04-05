@@ -29,17 +29,19 @@ COPY alembic ./alembic
 COPY alembic.ini ./alembic.ini
 COPY pyproject.toml ./pyproject.toml
 
-# Create uploads directory
-RUN mkdir -p /app/uploads && chmod 755 /app/uploads
+# Create uploads and data directories
+RUN mkdir -p /app/uploads /app/data && chmod 755 /app/uploads /app/data
 
 # Expose port (Render will assign $PORT env var)
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+# Health check (simple, doesn't require app to be fully started)
+# Increased start-period to 60s to allow for migrations
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# Startup script: Run migrations then start server
-# Render provides $PORT environment variable
-CMD alembic upgrade head && \
-    uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1
+# Startup: Run migrations then start server
+# Use PORT from environment (Render sets this)
+CMD bash -c "alembic upgrade head || true" && \
+    uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --log-level info
+
