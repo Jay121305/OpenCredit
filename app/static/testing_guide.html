@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Guide - OpenCredit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+        }
+        h1, h2, h3 { color: #38bdf8; }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; border-bottom: 2px solid #334155; padding-bottom: 10px; }
+        h2 { margin-top: 40px; }
+        .badge {
+            background: #3b82f6;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+        th { background: #1e293b; color: #94a3b8; font-weight: 600; }
+        .step {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .step h4 { margin: 0 0 10px 0; color: #f1f5f9; }
+        code {
+            background: #334155;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #a78bfa;
+        }
+        .btn-home {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .btn-home:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="btn-home">← Back to Dashboard</a>
+        <h1>🎯 Testing Guide</h1>
+        <p>Welcome to the OpenCredit project! This guide will help you understand how to navigate and test out the core features of the system.</p>
+
+        <h2>1. Available Demo Accounts</h2>
+        <p>You can use the following pre-configured accounts to explore the system from different perspectives:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><span class="badge">Admin</span></td><td>admin@demo.opencredit.com</td><td>AdminPass123!</td></tr>
+                <tr><td><span class="badge">Analyst</span></td><td>analyst@demo.opencredit.com</td><td>AnalystPass123!</td></tr>
+                <tr><td><span class="badge">User</span></td><td>user@demo.opencredit.com</td><td>UserPass123!</td></tr>
+                <tr><td><span class="badge">Viewer</span></td><td>viewer@demo.opencredit.com</td><td>ViewerPass123!</td></tr>
+            </tbody>
+        </table>
+
+        <h2>2. Quick Test Flow</h2>
+        <p>Follow these steps to see the main features (Fraud Detection & Ledger) in action:</p>
+
+        <div class="step">
+            <h4>Step 1: Sign In</h4>
+            <p>Go to the main <strong>Sign In</strong> page and use the Admin credentials to log in. This gives you full access to all tabs.</p>
+        </div>
+
+        <div class="step">
+            <h4>Step 2: Create a Merchant</h4>
+            <p>Navigate to the <strong>Merchants</strong> tab and create a new merchant. The system will give you a mock API Key.</p>
+        </div>
+
+        <div class="step">
+            <h4>Step 3: Process a Payment</h4>
+            <p>Go to the <strong>Payments</strong> tab. Enter an amount (e.g., $100) and process a test payment. It should be approved automatically.</p>
+        </div>
+
+        <div class="step">
+            <h4>Step 4: Trigger the Fraud Engine</h4>
+            <p>To see the ML Fraud Detection at work, try processing a payment of <strong>$6,000</strong>. Because the default threshold is $5,000, the system will flag/reject it.</p>
+        </div>
+
+        <div class="step">
+            <h4>Step 5: Check the Immutable Ledger</h4>
+            <p>Go to the <strong>Ledger</strong> tab. Here you will see the cryptographic hash-chain representing your transactions. Click <strong>Verify Chain</strong> to ensure data integrity.</p>
+        </div>
+
+        <h2>3. What Does What? (System Components)</h2>
+        <ul>
+            <li><strong>Authentication & Roles:</strong> Managed via JWT tokens. Different roles see different data and have varying permissions.</li>
+            <li><strong>Fraud Detection:</strong> Uses a Machine Learning <em>Isolation Forest</em> model plus rule-based checks (High Value, Transaction Velocity, Geo-Mismatch).</li>
+            <li><strong>Ledger System:</strong> A blockchain-style immutable audit trail. Any tampered transaction will instantly break the hash chain validation.</li>
+            <li><strong>RBAC (Role-Based Access Control):</strong> Viewers can only view the dashboard, Users can perform payments, Analysts can view aggregated records, and Admins control everything.</li>
+        </ul>
+
+        <h2>4. Where to Find API Documentation?</h2>
+        <p>If you want to test the backend API endpoints directly (e.g., via Postman or inside your browser), visit:</p>
+        <ul>
+            <li><a href="/docs" style="color: #38bdf8;">/docs</a> (Swagger UI - Interactive)</li>
+            <li><a href="/redoc" style="color: #38bdf8;">/redoc</a> (ReDoc UI)</li>
+        </ul>
+    </div>
+</body>
+</html>
