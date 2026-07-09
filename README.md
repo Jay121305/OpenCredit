@@ -878,8 +878,8 @@ opencredit/
 
 ## 📞 Support
 
-- **Live Demo**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
+- **Live Demo**: https://opencredit-api-ivon.onrender.com
+- **HELP Docs**: https://opencredit-api-ivon.onrender.com/static/testing_guide.html
 - **Issues**: GitHub Issues
 
 ---
