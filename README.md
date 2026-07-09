@@ -5,7 +5,8 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python_3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-141_Passing-00C853?style=for-the-badge)
+![CI](https://github.com/Jay121305/OpenCredit/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://codecov.io/gh/Jay121305/OpenCredit/branch/main/graph/badge.svg)
 
 **A production-ready FastAPI fintech backend with ML fraud detection, blockchain-style ledger, and enterprise features**
 
