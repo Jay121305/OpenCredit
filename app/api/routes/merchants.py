@@ -36,19 +36,19 @@ KEY_ROTATION_GRACE_PERIOD_DAYS = 7
     response_model=MerchantCreateResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new merchant",
-    description="Create a new merchant account and generate an API key. **Available to all authenticated users.**",
+    description="Create a new merchant account and generate an API key. **Requires admin privileges.**",
 )
 def create_merchant(
     payload: MerchantCreateRequest,
     db: Session = Depends(get_db),
     admin: User = Depends(get_current_admin_user),
 ) -> MerchantCreateResponse:
-    """
-    Create a new merchant account.
-    
-    - Requires user authentication
-    - Generates a unique API key for the merchant
-    - API key is only shown once - store it securely!
+   """
+Create a new merchant account.
+
+- Requires administrator privileges
+- Generates a unique API key
+- API key is only shown once and should be stored securely
     
     Returns:
         MerchantCreateResponse with merchant_id, name, and API key
