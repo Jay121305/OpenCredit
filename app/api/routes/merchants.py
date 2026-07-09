@@ -41,7 +41,7 @@ KEY_ROTATION_GRACE_PERIOD_DAYS = 7
 def create_merchant(
     payload: MerchantCreateRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    admin: User = Depends(get_current_admin_user),
 ) -> MerchantCreateResponse:
     """
     Create a new merchant account.
